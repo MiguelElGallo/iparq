@@ -39,9 +39,10 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
 ## Usage
 
 Run
-    ```sh
-    iparq <filename>
-    ```
+
+```sh
+iparq <filename>
+```
 
 Replace `<filename>` with the path to your .parquet file. The utility will read the metadata of the file and print the compression codecs used in the parquet file.
 
