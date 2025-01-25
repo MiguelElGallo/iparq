@@ -4,13 +4,27 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
 
 ## Installation
 
+### Using pip
+
+1) Install the package using pip:
+
+    ```sh
+    pip install iparq
+    ```
+
+2) Verify the installation by running:
+
+    ```sh
+    iparq --help
+    ```
+
 ### Using uv
 
 1) Clone the repo:
 
     ```sh
-    git clone https://github.com/MiguelElGallo/ipq.git
-    cd ipq
+    git clone https://github.com/MiguelElGallo/iparq.git
+    cd iparq
     ```
 
 2) Make sure to have Astral’s UV installed by following the steps here:  
@@ -20,7 +34,7 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
 3) Execute the following command:
 
     ```sh
-    uv run iparq.py <filename>
+    uv run iparq <filename>
     ```
 
 Replace `<filename>` with the path to your .parquet file. The utility will read the metadata of the file and print the compression codecs used in the parquet file.
