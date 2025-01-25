@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "MiguelElGallo", email = "miguel.zurcher@gmail.com" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.9"
 dependencies = [
     "pyarrow>=19.0.0",
     "pydantic>=2.10.6",
