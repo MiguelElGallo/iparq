@@ -13,6 +13,11 @@ dependencies = [
     "typer>=0.15.1",
 ]
 
+[project.optional-dependencies]
+test = [
+  "pytest>=7.0",
+]
+
 [project.scripts]
 iparq = "iparq.source:app"
 
