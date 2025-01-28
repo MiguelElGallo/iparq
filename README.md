@@ -43,6 +43,16 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
     iparq --help
     ```
 
+### Using Homebrew in a MAC
+
+1) Run the following:
+
+    ```sh
+    brew tap MiguelElGallo/tap https://github.com/MiguelElGallo//homebrew-iparq.git
+    brew install MiguelElGallo/tap/iparq
+    iparq —help
+    ```
+    
 ## Usage
 
 Run
@@ -52,6 +62,7 @@ iparq <filename>
 ```
 
 Replace `<filename>` with the path to your .parquet file. The utility will read the metadata of the file and print the compression codecs used in the parquet file.
+
 
 ## Example output
 
