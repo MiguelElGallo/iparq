@@ -2,9 +2,10 @@ import pyarrow.parquet as pq
 import typer
 from pydantic import BaseModel
 from rich import print
+from rich.console import Console
 
 app = typer.Typer()
-
+console = Console()
 
 class ParquetMetaModel(BaseModel):
     """
@@ -39,14 +40,20 @@ def read_parquet_metadata(filename: str):
             - parquet_metadata (pyarrow.parquet.FileMetaData): The metadata of the Parquet file.
             - compression_codecs (set): A set of compression codecs used in the Parquet file.
     """
-    compression_codecs = set([])
-    parquet_metadata = pq.ParquetFile(filename).metadata
+    try:
+        compression_codecs = set([])
+        parquet_metadata = pq.ParquetFile(filename).metadata
 
-    for i in range(parquet_metadata.num_row_groups):
-        for j in range(parquet_metadata.num_columns):
-            compression_codecs.add(parquet_metadata.row_group(i).column(j).compression)
+        for i in range(parquet_metadata.num_row_groups):
+            for j in range(parquet_metadata.num_columns):
+                compression_codecs.add(parquet_metadata.row_group(i).column(j).compression)
+
+    except FileNotFoundError:
+        console.print(f"Cannot open: {filename}.",  style="blink bold red underline on white")
+        exit(1)
 
     return parquet_metadata, compression_codecs
+
 
 
 def print_parquet_metadata(parquet_metadata):
@@ -75,10 +82,10 @@ def print_parquet_metadata(parquet_metadata):
             format_version=str(parquet_metadata.format_version),
             serialized_size=parquet_metadata.serialized_size,
         )
-        print(meta)
+        console.print(meta)
 
     except AttributeError as e:
-        print(f"Error: {e}")
+       console.print(f"Error: {e}", style="blink bold red underline on white")
     finally:
         pass
 
@@ -92,7 +99,7 @@ def main(filename: str):
         filename (str): The path to the Parquet file.
 
     Returns:
-        None
+        Metadata of the Parquet file and the compression codecs used.
     """
     (parquet_metadata, compression) = read_parquet_metadata(filename)
 
