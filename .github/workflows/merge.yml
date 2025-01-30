@@ -19,6 +19,9 @@ on:
 
 jobs:
   test_package:
+    permissions:
+        contents: read
+        pull-requests: write
     name: Test ${{ matrix.os }} Python ${{ matrix.python_version }}
     runs-on: ${{ matrix.os }}
     strategy:
