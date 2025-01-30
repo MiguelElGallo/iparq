@@ -7,6 +7,7 @@ from rich.console import Console
 app = typer.Typer()
 console = Console()
 
+
 class ParquetMetaModel(BaseModel):
     """
     ParquetMetaModel is a data model representing metadata for a Parquet file.
@@ -46,14 +47,17 @@ def read_parquet_metadata(filename: str):
 
         for i in range(parquet_metadata.num_row_groups):
             for j in range(parquet_metadata.num_columns):
-                compression_codecs.add(parquet_metadata.row_group(i).column(j).compression)
+                compression_codecs.add(
+                    parquet_metadata.row_group(i).column(j).compression
+                )
 
     except FileNotFoundError:
-        console.print(f"Cannot open: {filename}.",  style="blink bold red underline on white")
+        console.print(
+            f"Cannot open: {filename}.", style="blink bold red underline on white"
+        )
         exit(1)
 
     return parquet_metadata, compression_codecs
-
 
 
 def print_parquet_metadata(parquet_metadata):
@@ -85,7 +89,7 @@ def print_parquet_metadata(parquet_metadata):
         console.print(meta)
 
     except AttributeError as e:
-       console.print(f"Error: {e}", style="blink bold red underline on white")
+        console.print(f"Error: {e}", style="blink bold red underline on white")
     finally:
         pass
 

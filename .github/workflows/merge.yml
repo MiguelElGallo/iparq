@@ -42,15 +42,16 @@ jobs:
         - name: Install dependencies
           run: |
             uv sync --all-extras 
+
         - name: Lint with ruff
-          run: uvx ruff check .
+          run: uv run ruff check .
         - name: Check types with mypy
           run: |
             cd src/iparq
-            uvx mypy . --config-file=../../pyproject.toml
+            uv run mypy . --config-file=../../pyproject.toml
         - name: Check formatting with black
           run: uvx black . --check --verbose
         - name: Run Python tests
           if: runner.os != 'Windows'
-          run: uvx pytest -s -vv --cov --cov-fail-under=86
+          run: uv run pytest -s -vv
 

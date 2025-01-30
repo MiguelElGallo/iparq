@@ -34,3 +34,7 @@ addopts = "-ra -q"
 testpaths = [
     "tests",
 ]
+
+[[tool.mypy.overrides]]
+module = ["pyarrow.*"]
+ignore_missing_imports = true
