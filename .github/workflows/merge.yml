@@ -1,0 +1,60 @@
+name: Python check
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - "**.md"
+      - ".azdo/**"
+      - ".devcontainer/**"
+      - ".github/**"
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - "**.md"
+      - ".azdo/**"
+      - ".devcontainer/**"
+      - ".github/**"
+  workflow_call:
+
+jobs:
+  test_package:
+    permissions:
+        contents: read
+        pull-requests: write
+    name: Test ${{ matrix.os }} Python ${{ matrix.python_version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04", "windows-latest"]
+        python_version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    env:
+      UV_SYSTEM_PYTHON: 1
+    steps:
+        - uses: actions/checkout@v4
+        - name: Setup python
+          uses: actions/setup-python@v5
+          with:
+            python-version: ${{ matrix.python_version }}
+            architecture: x64
+        - name: Install uv
+          uses: astral-sh/setup-uv@v5
+
+        # dependencies are in uv.lock
+        - name: Install dependencies
+          run: |
+            uv sync --all-extras 
+
+        - name: Lint with ruff
+          run: uv run ruff check .
+        - name: Check types with mypy
+          run: |
+            cd src/iparq
+            uv run mypy . --config-file=../../pyproject.toml
+        - name: Check formatting with black
+          run: uvx black . --check --verbose
+        - name: Run Python tests
+          if: runner.os != 'Windows'
+          run: uv run pytest -s -vv
+
