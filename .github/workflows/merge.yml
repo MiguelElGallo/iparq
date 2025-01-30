@@ -46,7 +46,7 @@ jobs:
           run: uvx ruff check .
         - name: Check types with mypy
           run: |
-            cd ../src/iparq/
+            cd /src/iparq/
             python3 -m mypy . --config-file=../../pyproject.toml
         - name: Check formatting with black
           run: uvx black . --check --verbose
