@@ -170,3 +170,4 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 .github/.DS_Store
+yellow_tripdata_2024-01.parquet

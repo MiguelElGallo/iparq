@@ -94,6 +94,32 @@ def print_parquet_metadata(parquet_metadata):
         pass
 
 
+def print_compression_types(parquet_metadata) -> None:
+    """
+    Prints the compression type for each column in each row group of the Parquet file.
+    """
+    try:
+        num_row_groups = parquet_metadata.num_row_groups
+        num_columns = parquet_metadata.num_columns
+        console.print("[bold underline]Column Compression Info:[/bold underline]")
+        for i in range(num_row_groups):
+            console.print(f"[bold]Row Group {i}:[/bold]")
+            for j in range(num_columns):
+                column_chunk = parquet_metadata.row_group(i).column(j)
+                compression = column_chunk.compression
+                column_name = parquet_metadata.schema.column(j).name
+                console.print(
+                    f"  Column '{column_name}' (Index {j}): [italic]{compression}[/italic]"
+                )
+    except Exception as e:
+        console.print(
+            f"Error while printing compression types: {e}",
+            style="blink bold red underline on white",
+        )
+    finally:
+        pass
+
+
 @app.command()
 def main(filename: str):
     """
@@ -107,9 +133,8 @@ def main(filename: str):
     """
     (parquet_metadata, compression) = read_parquet_metadata(filename)
 
-    print_parquet_metadata(
-        parquet_metadata,
-    )
+    print_parquet_metadata(parquet_metadata)
+    print_compression_types(parquet_metadata)
     print(f"Compression codecs: {compression}")
 
 
