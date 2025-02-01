@@ -52,7 +52,7 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
     brew install MiguelElGallo/tap/iparq
     iparq —help
     ```
-    
+
 ## Usage
 
 Run
@@ -63,17 +63,77 @@ iparq <filename>
 
 Replace `<filename>` with the path to your .parquet file. The utility will read the metadata of the file and print the compression codecs used in the parquet file.
 
-
 ## Example output
 
 ```log
 ParquetMetaModel(
     created_by='parquet-cpp-arrow version 14.0.2',
-    num_columns=3,
-    num_rows=3,
-    num_row_groups=1,
+    num_columns=19,
+    num_rows=2964624,
+    num_row_groups=3,
     format_version='2.6',
-    serialized_size=2223
+    serialized_size=6357
 )
-Compression codecs: {'SNAPPY'}
+Column Compression Info:
+Row Group 0:
+  Column 'VendorID' (Index 0): ZSTD
+  Column 'tpep_pickup_datetime' (Index 1): ZSTD
+  Column 'tpep_dropoff_datetime' (Index 2): ZSTD
+  Column 'passenger_count' (Index 3): ZSTD
+  Column 'trip_distance' (Index 4): ZSTD
+  Column 'RatecodeID' (Index 5): ZSTD
+  Column 'store_and_fwd_flag' (Index 6): ZSTD
+  Column 'PULocationID' (Index 7): ZSTD
+  Column 'DOLocationID' (Index 8): ZSTD
+  Column 'payment_type' (Index 9): ZSTD
+  Column 'fare_amount' (Index 10): ZSTD
+  Column 'extra' (Index 11): ZSTD
+  Column 'mta_tax' (Index 12): ZSTD
+  Column 'tip_amount' (Index 13): ZSTD
+  Column 'tolls_amount' (Index 14): ZSTD
+  Column 'improvement_surcharge' (Index 15): ZSTD
+  Column 'total_amount' (Index 16): ZSTD
+  Column 'congestion_surcharge' (Index 17): ZSTD
+  Column 'Airport_fee' (Index 18): ZSTD
+Row Group 1:
+  Column 'VendorID' (Index 0): ZSTD
+  Column 'tpep_pickup_datetime' (Index 1): ZSTD
+  Column 'tpep_dropoff_datetime' (Index 2): ZSTD
+  Column 'passenger_count' (Index 3): ZSTD
+  Column 'trip_distance' (Index 4): ZSTD
+  Column 'RatecodeID' (Index 5): ZSTD
+  Column 'store_and_fwd_flag' (Index 6): ZSTD
+  Column 'PULocationID' (Index 7): ZSTD
+  Column 'DOLocationID' (Index 8): ZSTD
+  Column 'payment_type' (Index 9): ZSTD
+  Column 'fare_amount' (Index 10): ZSTD
+  Column 'extra' (Index 11): ZSTD
+  Column 'mta_tax' (Index 12): ZSTD
+  Column 'tip_amount' (Index 13): ZSTD
+  Column 'tolls_amount' (Index 14): ZSTD
+  Column 'improvement_surcharge' (Index 15): ZSTD
+  Column 'total_amount' (Index 16): ZSTD
+  Column 'congestion_surcharge' (Index 17): ZSTD
+  Column 'Airport_fee' (Index 18): ZSTD
+Row Group 2:
+  Column 'VendorID' (Index 0): ZSTD
+  Column 'tpep_pickup_datetime' (Index 1): ZSTD
+  Column 'tpep_dropoff_datetime' (Index 2): ZSTD
+  Column 'passenger_count' (Index 3): ZSTD
+  Column 'trip_distance' (Index 4): ZSTD
+  Column 'RatecodeID' (Index 5): ZSTD
+  Column 'store_and_fwd_flag' (Index 6): ZSTD
+  Column 'PULocationID' (Index 7): ZSTD
+  Column 'DOLocationID' (Index 8): ZSTD
+  Column 'payment_type' (Index 9): ZSTD
+  Column 'fare_amount' (Index 10): ZSTD
+  Column 'extra' (Index 11): ZSTD
+  Column 'mta_tax' (Index 12): ZSTD
+  Column 'tip_amount' (Index 13): ZSTD
+  Column 'tolls_amount' (Index 14): ZSTD
+  Column 'improvement_surcharge' (Index 15): ZSTD
+  Column 'total_amount' (Index 16): ZSTD
+  Column 'congestion_surcharge' (Index 17): ZSTD
+  Column 'Airport_fee' (Index 18): ZSTD
+Compression codecs: {'ZSTD'}
 ```
