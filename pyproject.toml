@@ -8,9 +8,10 @@ authors = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "pyarrow>=19.0.0",
-    "pydantic>=2.10.6",
-    "typer>=0.15.1",
+    "pyarrow",
+    "typer[all]",
+    "pydantic",
+    "rich",
 ]
 
 [project.optional-dependencies]
