@@ -15,6 +15,18 @@ Read more about bloom filters in this [great article](https://duckdb.org/2025/03
 
 ## Installation
 
+### Zero installation - Recommended
+
+1) Make sure to have Astral’s UV installed by following the steps here:  
+
+    <https://docs.astral.sh/uv/getting-started/installation/>
+
+2) Execute the following command:
+
+    ```sh
+    uvx iparq yourparquet.parquet
+    ```
+
 ### Using pip
 
 1) Install the package using pip:
