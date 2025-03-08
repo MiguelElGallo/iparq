@@ -24,7 +24,7 @@ Read more about bloom filters in this [great article](https://duckdb.org/2025/03
 2) Execute the following command:
 
     ```sh
-    uvx iparq yourparquet.parquet
+    uvx --refresh iparq yourparquet.parquet
     ```
 
 ### Using pip
