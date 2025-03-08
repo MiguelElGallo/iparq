@@ -120,6 +120,45 @@ def print_compression_types(parquet_metadata) -> None:
         pass
 
 
+def print_bloom_filter_info(parquet_metadata) -> None:
+    """
+    Prints information about bloom filters for each column in each row group of the Parquet file.
+    """
+    try:
+        num_row_groups = parquet_metadata.num_row_groups
+        num_columns = parquet_metadata.num_columns
+        has_bloom_filters = False
+
+        console.print("[bold underline]Bloom Filter Info:[/bold underline]")
+
+        for i in range(num_row_groups):
+            row_group = parquet_metadata.row_group(i)
+            bloom_filters_in_group = False
+
+            for j in range(num_columns):
+                column_chunk = row_group.column(j)
+                column_name = parquet_metadata.schema.column(j).name
+
+                # Check if this column has bloom filters using is_stats_set
+                if hasattr(column_chunk, "is_stats_set") and column_chunk.is_stats_set:
+                    if not bloom_filters_in_group:
+                        console.print(f"[bold]Row Group {i}:[/bold]")
+                        bloom_filters_in_group = True
+                    has_bloom_filters = True
+                    console.print(
+                        f"  Column '{column_name}' (Index {j}): [green]Has bloom filter[/green]"
+                    )
+
+        if not has_bloom_filters:
+            console.print("  [italic]No bloom filters found in any column[/italic]")
+
+    except Exception as e:
+        console.print(
+            f"Error while printing bloom filter information: {e}",
+            style="blink bold red underline on white",
+        )
+
+
 @app.command()
 def main(filename: str):
     """
@@ -135,6 +174,7 @@ def main(filename: str):
 
     print_parquet_metadata(parquet_metadata)
     print_compression_types(parquet_metadata)
+    print_bloom_filter_info(parquet_metadata)
     print(f"Compression codecs: {compression}")
 
 
