@@ -1,6 +1,6 @@
 from typer.testing import CliRunner
 
-from iparq.source import app
+from src.iparq.source import app
 
 
 def test_empty():
