@@ -1,8 +1,11 @@
+from typing import List, Optional
+
 import pyarrow.parquet as pq
 import typer
 from pydantic import BaseModel
 from rich import print
 from rich.console import Console
+from rich.table import Table
 
 app = typer.Typer()
 console = Console()
@@ -27,6 +30,36 @@ class ParquetMetaModel(BaseModel):
     num_row_groups: int
     format_version: str
     serialized_size: int
+
+
+class ColumnInfo(BaseModel):
+    """
+    ColumnInfo is a data model representing information about a column in a Parquet file.
+
+    Attributes:
+        row_group (int): The row group index.
+        column_name (str): The name of the column.
+        column_index (int): The index of the column.
+        compression_type (str): The compression type used for the column.
+        has_bloom_filter (bool): Whether the column has a bloom filter.
+    """
+
+    row_group: int
+    column_name: str
+    column_index: int
+    compression_type: str
+    has_bloom_filter: Optional[bool] = False
+
+
+class ParquetColumnInfo(BaseModel):
+    """
+    ParquetColumnInfo is a data model representing information about all columns in a Parquet file.
+
+    Attributes:
+        columns (List[ColumnInfo]): List of column information.
+    """
+
+    columns: List[ColumnInfo] = []
 
 
 def read_parquet_metadata(filename: str):
@@ -94,69 +127,104 @@ def print_parquet_metadata(parquet_metadata):
         pass
 
 
-def print_compression_types(parquet_metadata) -> None:
+def print_compression_types(parquet_metadata, column_info: ParquetColumnInfo) -> None:
     """
-    Prints the compression type for each column in each row group of the Parquet file.
+    Collects compression type information for each column and adds it to the column_info model.
+
+    Args:
+        parquet_metadata: The Parquet file metadata.
+        column_info: The ParquetColumnInfo model to update.
     """
     try:
         num_row_groups = parquet_metadata.num_row_groups
         num_columns = parquet_metadata.num_columns
-        console.print("[bold underline]Column Compression Info:[/bold underline]")
-        for i in range(num_row_groups):
-            console.print(f"[bold]Row Group {i}:[/bold]")
-            for j in range(num_columns):
-                column_chunk = parquet_metadata.row_group(i).column(j)
-                compression = column_chunk.compression
-                column_name = parquet_metadata.schema.column(j).name
-                console.print(
-                    f"  Column '{column_name}' (Index {j}): [italic]{compression}[/italic]"
-                )
-    except Exception as e:
-        console.print(
-            f"Error while printing compression types: {e}",
-            style="blink bold red underline on white",
-        )
-    finally:
-        pass
-
-
-def print_bloom_filter_info(parquet_metadata) -> None:
-    """
-    Prints information about bloom filters for each column in each row group of the Parquet file.
-    """
-    try:
-        num_row_groups = parquet_metadata.num_row_groups
-        num_columns = parquet_metadata.num_columns
-        has_bloom_filters = False
-
-        console.print("[bold underline]Bloom Filter Info:[/bold underline]")
 
         for i in range(num_row_groups):
             row_group = parquet_metadata.row_group(i)
-            bloom_filters_in_group = False
+            for j in range(num_columns):
+                column_chunk = row_group.column(j)
+                compression = column_chunk.compression
+                column_name = parquet_metadata.schema.names[j]
+
+                # Create or update column info
+                column_info.columns.append(
+                    ColumnInfo(
+                        row_group=i,
+                        column_name=column_name,
+                        column_index=j,
+                        compression_type=compression,
+                    )
+                )
+    except Exception as e:
+        console.print(
+            f"Error while collecting compression types: {e}",
+            style="blink bold red underline on white",
+        )
+
+
+def print_bloom_filter_info(parquet_metadata, column_info: ParquetColumnInfo) -> None:
+    """
+    Updates the column_info model with bloom filter information.
+
+    Args:
+        parquet_metadata: The Parquet file metadata.
+        column_info: The ParquetColumnInfo model to update.
+    """
+    try:
+        num_row_groups = parquet_metadata.num_row_groups
+        num_columns = parquet_metadata.num_columns
+
+        for i in range(num_row_groups):
+            row_group = parquet_metadata.row_group(i)
 
             for j in range(num_columns):
                 column_chunk = row_group.column(j)
-                column_name = parquet_metadata.schema.column(j).name
 
-                # Check if this column has bloom filters using is_stats_set
-                if hasattr(column_chunk, "is_stats_set") and column_chunk.is_stats_set:
-                    if not bloom_filters_in_group:
-                        console.print(f"[bold]Row Group {i}:[/bold]")
-                        bloom_filters_in_group = True
-                    has_bloom_filters = True
-                    console.print(
-                        f"  Column '{column_name}' (Index {j}): [green]Has bloom filter[/green]"
-                    )
-
-        if not has_bloom_filters:
-            console.print("  [italic]No bloom filters found in any column[/italic]")
-
+                # Find the corresponding column in our model
+                for col in column_info.columns:
+                    if col.row_group == i and col.column_index == j:
+                        # Check if this column has bloom filters
+                        has_bloom_filter = (
+                            hasattr(column_chunk, "is_stats_set")
+                            and column_chunk.is_stats_set
+                        )
+                        col.has_bloom_filter = has_bloom_filter
+                        break
     except Exception as e:
         console.print(
-            f"Error while printing bloom filter information: {e}",
+            f"Error while collecting bloom filter information: {e}",
             style="blink bold red underline on white",
         )
+
+
+def print_column_info_table(column_info: ParquetColumnInfo) -> None:
+    """
+    Prints the column information using a Rich table.
+
+    Args:
+        column_info: The ParquetColumnInfo model to display.
+    """
+    table = Table(title="Parquet Column Information")
+
+    # Add table columns
+    table.add_column("Row Group", justify="center", style="cyan")
+    table.add_column("Column Name", style="green")
+    table.add_column("Index", justify="center")
+    table.add_column("Compression", style="magenta")
+    table.add_column("Bloom Filter", justify="center")
+
+    # Add rows to the table
+    for col in column_info.columns:
+        table.add_row(
+            str(col.row_group),
+            col.column_name,
+            str(col.column_index),
+            col.compression_type,
+            "✅" if col.has_bloom_filter else "❌",
+        )
+
+    # Print the table
+    console.print(table)
 
 
 @app.command()
@@ -173,8 +241,17 @@ def main(filename: str):
     (parquet_metadata, compression) = read_parquet_metadata(filename)
 
     print_parquet_metadata(parquet_metadata)
-    print_compression_types(parquet_metadata)
-    print_bloom_filter_info(parquet_metadata)
+
+    # Create a model to store column information
+    column_info = ParquetColumnInfo()
+
+    # Collect information
+    print_compression_types(parquet_metadata, column_info)
+    print_bloom_filter_info(parquet_metadata, column_info)
+
+    # Print the information as a table
+    print_column_info_table(column_info)
+
     print(f"Compression codecs: {compression}")
 
 
