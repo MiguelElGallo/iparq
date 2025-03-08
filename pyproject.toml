@@ -1,7 +1,7 @@
 [project]
 name = "iparq"
-version = "0.1.7"
-description = "Display version and compression information about a parquet file"
+version = "0.2.0"
+description = "Display version compression and bloom filter information about a parquet file"
 readme = "README.md"
 authors = [
     { name = "MiguelElGallo", email = "miguel.zurcher@gmail.com" }
