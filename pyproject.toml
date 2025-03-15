@@ -1,6 +1,6 @@
 [project]
 name = "iparq"
-version = "0.2.0"
+version = "0.2.5"
 description = "Display version compression and bloom filter information about a parquet file"
 readme = "README.md"
 authors = [
@@ -31,7 +31,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
-addopts = "-ra -q"
+addopts = ["-ra", "-q"]
 testpaths = [
     "tests",
 ]

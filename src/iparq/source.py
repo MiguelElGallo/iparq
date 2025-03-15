@@ -1,3 +1,5 @@
+import json
+from enum import Enum
 from typing import List, Optional
 
 import pyarrow.parquet as pq
@@ -7,8 +9,17 @@ from rich import print
 from rich.console import Console
 from rich.table import Table
 
-app = typer.Typer()
+app = typer.Typer(
+    help="Inspect Parquet files for metadata, compression, and bloom filters"
+)
 console = Console()
+
+
+class OutputFormat(str, Enum):
+    """Enum for output format options."""
+
+    RICH = "rich"
+    JSON = "json"
 
 
 class ParquetMetaModel(BaseModel):
@@ -227,20 +238,59 @@ def print_column_info_table(column_info: ParquetColumnInfo) -> None:
     console.print(table)
 
 
-@app.command()
-def main(filename: str):
+def output_json(
+    meta_model: ParquetMetaModel,
+    column_info: ParquetColumnInfo,
+    compression_codecs: set,
+) -> None:
     """
-    Main function to read and print Parquet file metadata.
+    Outputs the parquet information in JSON format.
 
     Args:
-        filename (str): The path to the Parquet file.
+        meta_model: The Parquet metadata model
+        column_info: The column information model
+        compression_codecs: Set of compression codecs used
+    """
+    result = {
+        "metadata": meta_model.model_dump(),
+        "columns": [column.model_dump() for column in column_info.columns],
+        "compression_codecs": list(compression_codecs),
+    }
 
-    Returns:
-        Metadata of the Parquet file and the compression codecs used.
+    print(json.dumps(result, indent=2))
+
+
+@app.command(name="")
+@app.command(name="inspect")
+def inspect(
+    filename: str = typer.Argument(..., help="Path to the Parquet file to inspect"),
+    format: OutputFormat = typer.Option(
+        OutputFormat.RICH, "--format", "-f", help="Output format (rich or json)"
+    ),
+    metadata_only: bool = typer.Option(
+        False,
+        "--metadata-only",
+        "-m",
+        help="Show only file metadata without column details",
+    ),
+    column_filter: Optional[str] = typer.Option(
+        None, "--column", "-c", help="Filter results to show only specific column"
+    ),
+):
+    """
+    Inspect a Parquet file and display its metadata, compression settings, and bloom filter information.
     """
     (parquet_metadata, compression) = read_parquet_metadata(filename)
 
-    print_parquet_metadata(parquet_metadata)
+    # Create metadata model
+    meta_model = ParquetMetaModel(
+        created_by=parquet_metadata.created_by,
+        num_columns=parquet_metadata.num_columns,
+        num_rows=parquet_metadata.num_rows,
+        num_row_groups=parquet_metadata.num_row_groups,
+        format_version=str(parquet_metadata.format_version),
+        serialized_size=parquet_metadata.serialized_size,
+    )
 
     # Create a model to store column information
     column_info = ParquetColumnInfo()
@@ -249,10 +299,27 @@ def main(filename: str):
     print_compression_types(parquet_metadata, column_info)
     print_bloom_filter_info(parquet_metadata, column_info)
 
-    # Print the information as a table
-    print_column_info_table(column_info)
+    # Filter columns if requested
+    if column_filter:
+        column_info.columns = [
+            col for col in column_info.columns if col.column_name == column_filter
+        ]
+        if not column_info.columns:
+            console.print(
+                f"No columns match the filter: {column_filter}", style="yellow"
+            )
 
-    print(f"Compression codecs: {compression}")
+    # Output based on format selection
+    if format == OutputFormat.JSON:
+        output_json(meta_model, column_info, compression)
+    else:  # Rich format
+        # Print the metadata
+        console.print(meta_model)
+
+        # Print column details if not metadata only
+        if not metadata_only:
+            print_column_info_table(column_info)
+            console.print(f"Compression codecs: {compression}")
 
 
 if __name__ == "__main__":
