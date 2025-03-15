@@ -260,7 +260,7 @@ def output_json(
     print(json.dumps(result, indent=2))
 
 
-@app.command(name="")  # Set as default command
+@app.command(name="")
 @app.command(name="inspect")
 def inspect(
     filename: str = typer.Argument(..., help="Path to the Parquet file to inspect"),

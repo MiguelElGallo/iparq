@@ -7,12 +7,12 @@ from iparq.source import app
 
 # Define path to test fixtures
 FIXTURES_DIR = Path(__file__).parent
+fixture_path = FIXTURES_DIR / "dummy.parquet"
 
 
 def test_parquet_info():
     """Test that the CLI correctly displays parquet file information."""
     runner = CliRunner()
-    fixture_path = FIXTURES_DIR / "dummy.parquet"
     result = runner.invoke(app, ["inspect", str(fixture_path)])
 
     assert result.exit_code == 0
