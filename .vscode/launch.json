@@ -11,9 +11,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": [
-                "${command:pickArgs}"
-            ]
+            "args": "${command:pickArgs}"
         }
     ]
 }
