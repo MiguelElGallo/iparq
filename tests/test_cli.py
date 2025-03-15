@@ -1,14 +1,19 @@
 import json
+from pathlib import Path
 
 from typer.testing import CliRunner
 
 from iparq.source import app
 
+# Define path to test fixtures
+FIXTURES_DIR = Path(__file__).parent
+
 
 def test_parquet_info():
     """Test that the CLI correctly displays parquet file information."""
     runner = CliRunner()
-    result = runner.invoke(app, ["inspect", "dummy.parquet"])
+    fixture_path = FIXTURES_DIR / "dummy.parquet"
+    result = runner.invoke(app, ["inspect", str(fixture_path)])
 
     assert result.exit_code == 0
 
@@ -36,7 +41,8 @@ Compression codecs: {'SNAPPY'}"""
 def test_metadata_only_flag():
     """Test that the metadata-only flag works correctly."""
     runner = CliRunner()
-    result = runner.invoke(app, ["inspect", "--metadata-only", "dummy.parquet"])
+    fixture_path = FIXTURES_DIR / "dummy.parquet"
+    result = runner.invoke(app, ["inspect", "--metadata-only", str(fixture_path)])
 
     assert result.exit_code == 0
     assert "ParquetMetaModel" in result.stdout
@@ -46,7 +52,8 @@ def test_metadata_only_flag():
 def test_column_filter():
     """Test that filtering by column name works correctly."""
     runner = CliRunner()
-    result = runner.invoke(app, ["inspect", "--column", "one", "dummy.parquet"])
+    fixture_path = FIXTURES_DIR / "dummy.parquet"
+    result = runner.invoke(app, ["inspect", "--column", "one", str(fixture_path)])
 
     assert result.exit_code == 0
     assert "one" in result.stdout
@@ -56,7 +63,8 @@ def test_column_filter():
 def test_json_output():
     """Test JSON output format."""
     runner = CliRunner()
-    result = runner.invoke(app, ["inspect", "--format", "json", "dummy.parquet"])
+    fixture_path = FIXTURES_DIR / "dummy.parquet"
+    result = runner.invoke(app, ["inspect", "--format", "json", str(fixture_path)])
 
     assert result.exit_code == 0
 
