@@ -252,8 +252,8 @@ def output_json(
         compression_codecs: Set of compression codecs used
     """
     result = {
-        "metadata": meta_model.dict(),
-        "columns": [column.dict() for column in column_info.columns],
+        "metadata": meta_model.model_dump(),
+        "columns": [column.model_dump() for column in column_info.columns],
         "compression_codecs": list(compression_codecs),
     }
 

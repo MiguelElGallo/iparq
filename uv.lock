@@ -52,11 +52,12 @@ wheels = [
 
 [[package]]
 name = "iparq"
-version = "0.2.0"
+version = "0.2.5"
 source = { editable = "." }
 dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
+    { name = "rich" },
     { name = "typer" },
 ]
 
@@ -72,11 +73,12 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "mypy", marker = "extra == 'checks'", specifier = ">=1.14.1" },
-    { name = "pyarrow", specifier = ">=19.0.0" },
-    { name = "pydantic", specifier = ">=2.10.6" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=7.0" },
+    { name = "rich" },
     { name = "ruff", marker = "extra == 'checks'", specifier = ">=0.9.3" },
-    { name = "typer", specifier = ">=0.15.1" },
+    { name = "typer", extras = ["all"] },
 ]
 provides-extras = ["test", "checks"]
 

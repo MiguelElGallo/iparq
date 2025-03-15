@@ -56,5 +56,5 @@ jobs:
           run: uvx black . --check --verbose
         - name: Run Python tests
           if: runner.os != 'Windows'
-          run: uv run pytest -s -vv
+          run: uv run pytest -vv
 

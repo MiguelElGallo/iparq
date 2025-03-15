@@ -5,10 +5,6 @@ from typer.testing import CliRunner
 from iparq.source import app
 
 
-def test_empty():
-    assert True
-
-
 def test_parquet_info():
     """Test that the CLI correctly displays parquet file information."""
     runner = CliRunner()
