@@ -1,6 +1,6 @@
 [project]
 name = "iparq"
-version = "0.2.5"
+version = "0.2.6"
 description = "Display version compression and bloom filter information about a parquet file"
 readme = "README.md"
 authors = [
@@ -9,7 +9,7 @@ authors = [
 requires-python = ">=3.9"
 dependencies = [
     "pyarrow",
-    "typer[all]",
+    "typer",
     "pydantic",
     "rich",
 ]
