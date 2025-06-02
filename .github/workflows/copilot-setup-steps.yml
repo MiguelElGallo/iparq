@@ -27,12 +27,5 @@ jobs:
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           uv --version
 
-      - name: Set up Node.js for GitHub MCP server
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install GitHub MCP server
-        run: |
-          npm install -g @github/github-mcp-server
-          github-mcp-server --version || echo "GitHub MCP server installed"
+      # Note: GitHub MCP server is not publicly available as npm package
+      # Remove this step until the package is officially released
