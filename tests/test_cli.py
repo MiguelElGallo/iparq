@@ -82,18 +82,44 @@ def test_multiple_files():
     """Test that multiple files can be inspected in a single command."""
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
-    # Create a second copy for testing
-    fixture_path2 = FIXTURES_DIR / "dummy2.parquet"
+    # Use the same file twice to test deduplication behavior
     
-    result = runner.invoke(app, ["inspect", str(fixture_path), str(fixture_path2)])
+    result = runner.invoke(app, ["inspect", str(fixture_path), str(fixture_path)])
     
     assert result.exit_code == 0
-    # Should contain file headers for both files
-    assert f"File: {fixture_path}" in result.stdout
-    assert f"File: {fixture_path2}" in result.stdout
-    # Should contain metadata for both files
-    assert result.stdout.count("ParquetMetaModel") == 2
-    assert result.stdout.count("Parquet Column Information") == 2
+    # Since both arguments are the same file, deduplication means only one file is processed
+    # and since there's only one unique file, no file header should be shown
+    assert "File:" not in result.stdout  # No header for single file (after deduplication)
+    assert result.stdout.count("ParquetMetaModel") == 1
+
+
+def test_multiple_different_files():
+    """Test multiple different files by creating a temporary copy."""
+    import shutil
+    import tempfile
+    
+    runner = CliRunner()
+    fixture_path = FIXTURES_DIR / "dummy.parquet"
+    
+    # Create a temporary file copy
+    with tempfile.NamedTemporaryFile(suffix='.parquet', delete=False) as tmp_file:
+        shutil.copy2(fixture_path, tmp_file.name)
+        tmp_path = tmp_file.name
+    
+    try:
+        result = runner.invoke(app, ["inspect", str(fixture_path), tmp_path])
+        
+        assert result.exit_code == 0
+        # Should contain file headers for both files
+        assert f"File: {fixture_path}" in result.stdout
+        assert f"File: {tmp_path}" in result.stdout
+        # Should contain metadata for both files
+        assert result.stdout.count("ParquetMetaModel") == 2
+        assert result.stdout.count("Parquet Column Information") == 2
+    finally:
+        # Clean up temporary file
+        import os
+        os.unlink(tmp_path)
 
 
 def test_glob_pattern():
