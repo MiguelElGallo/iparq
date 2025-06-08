@@ -85,7 +85,7 @@ def read_parquet_metadata(filename: str):
         tuple: A tuple containing:
             - parquet_metadata (pyarrow.parquet.FileMetaData): The metadata of the Parquet file.
             - compression_codecs (set): A set of compression codecs used in the Parquet file.
-    
+
     Raises:
         FileNotFoundError: If the file cannot be found or opened.
     """
@@ -94,9 +94,7 @@ def read_parquet_metadata(filename: str):
 
     for i in range(parquet_metadata.num_row_groups):
         for j in range(parquet_metadata.num_columns):
-            compression_codecs.add(
-                parquet_metadata.row_group(i).column(j).compression
-            )
+            compression_codecs.add(parquet_metadata.row_group(i).column(j).compression)
 
     return parquet_metadata, compression_codecs
 
@@ -265,7 +263,7 @@ def inspect_single_file(
 ) -> None:
     """
     Inspect a single Parquet file and display its metadata, compression settings, and bloom filter information.
-    
+
     Raises:
         Exception: If the file cannot be processed.
     """
@@ -319,7 +317,9 @@ def inspect_single_file(
 @app.command(name="")
 @app.command(name="inspect")
 def inspect(
-    filenames: List[str] = typer.Argument(..., help="Path(s) or pattern(s) to Parquet files to inspect"),
+    filenames: List[str] = typer.Argument(
+        ..., help="Path(s) or pattern(s) to Parquet files to inspect"
+    ),
     format: OutputFormat = typer.Option(
         OutputFormat.RICH, "--format", "-f", help="Output format (rich or json)"
     ),
@@ -345,7 +345,7 @@ def inspect(
         else:
             # If no matches found, treat as literal filename (for better error reporting)
             all_files.append(pattern)
-    
+
     # Remove duplicates while preserving order
     seen = set()
     unique_files = []
@@ -353,7 +353,7 @@ def inspect(
         if file not in seen:
             seen.add(file)
             unique_files.append(file)
-    
+
     # Process each file
     for i, filename in enumerate(unique_files):
         # For multiple files, add a header to separate results
@@ -362,7 +362,7 @@ def inspect(
                 console.print()  # Add blank line between files
             console.print(f"[bold blue]File: {filename}[/bold blue]")
             console.print("─" * (len(filename) + 6))
-        
+
         try:
             inspect_single_file(filename, format, metadata_only, column_filter)
         except Exception as e:

@@ -83,13 +83,15 @@ def test_multiple_files():
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
     # Use the same file twice to test deduplication behavior
-    
+
     result = runner.invoke(app, ["inspect", str(fixture_path), str(fixture_path)])
-    
+
     assert result.exit_code == 0
     # Since both arguments are the same file, deduplication means only one file is processed
     # and since there's only one unique file, no file header should be shown
-    assert "File:" not in result.stdout  # No header for single file (after deduplication)
+    assert (
+        "File:" not in result.stdout
+    )  # No header for single file (after deduplication)
     assert result.stdout.count("ParquetMetaModel") == 1
 
 
@@ -97,18 +99,18 @@ def test_multiple_different_files():
     """Test multiple different files by creating a temporary copy."""
     import shutil
     import tempfile
-    
+
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
-    
+
     # Create a temporary file copy
-    with tempfile.NamedTemporaryFile(suffix='.parquet', delete=False) as tmp_file:
+    with tempfile.NamedTemporaryFile(suffix=".parquet", delete=False) as tmp_file:
         shutil.copy2(fixture_path, tmp_file.name)
         tmp_path = tmp_file.name
-    
+
     try:
         result = runner.invoke(app, ["inspect", str(fixture_path), tmp_path])
-        
+
         assert result.exit_code == 0
         # Should contain file headers for both files
         assert f"File: {fixture_path}" in result.stdout
@@ -119,6 +121,7 @@ def test_multiple_different_files():
     finally:
         # Clean up temporary file
         import os
+
         os.unlink(tmp_path)
 
 
@@ -127,7 +130,7 @@ def test_glob_pattern():
     runner = CliRunner()
     # Test with a pattern that should match dummy files
     result = runner.invoke(app, ["inspect", str(FIXTURES_DIR / "dummy*.parquet")])
-    
+
     assert result.exit_code == 0
     # Should process at least one file
     assert "ParquetMetaModel" in result.stdout
@@ -138,7 +141,7 @@ def test_single_file_no_header():
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
     result = runner.invoke(app, ["inspect", str(fixture_path)])
-    
+
     assert result.exit_code == 0
     # Should not contain file header for single file
     assert "File:" not in result.stdout
@@ -150,9 +153,9 @@ def test_error_handling_with_multiple_files():
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
     nonexistent_path = FIXTURES_DIR / "nonexistent.parquet"
-    
+
     result = runner.invoke(app, ["inspect", str(fixture_path), str(nonexistent_path)])
-    
+
     assert result.exit_code == 0
     # Should process the good file
     assert "ParquetMetaModel" in result.stdout
