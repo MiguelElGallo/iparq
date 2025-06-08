@@ -1,3 +1,4 @@
+import glob
 import json
 from enum import Enum
 from typing import List, Optional
@@ -84,22 +85,16 @@ def read_parquet_metadata(filename: str):
         tuple: A tuple containing:
             - parquet_metadata (pyarrow.parquet.FileMetaData): The metadata of the Parquet file.
             - compression_codecs (set): A set of compression codecs used in the Parquet file.
+
+    Raises:
+        FileNotFoundError: If the file cannot be found or opened.
     """
-    try:
-        compression_codecs = set([])
-        parquet_metadata = pq.ParquetFile(filename).metadata
+    compression_codecs = set([])
+    parquet_metadata = pq.ParquetFile(filename).metadata
 
-        for i in range(parquet_metadata.num_row_groups):
-            for j in range(parquet_metadata.num_columns):
-                compression_codecs.add(
-                    parquet_metadata.row_group(i).column(j).compression
-                )
-
-    except FileNotFoundError:
-        console.print(
-            f"Cannot open: {filename}.", style="blink bold red underline on white"
-        )
-        exit(1)
+    for i in range(parquet_metadata.num_row_groups):
+        for j in range(parquet_metadata.num_columns):
+            compression_codecs.add(parquet_metadata.row_group(i).column(j).compression)
 
     return parquet_metadata, compression_codecs
 
@@ -260,27 +255,24 @@ def output_json(
     print(json.dumps(result, indent=2))
 
 
-@app.command(name="")
-@app.command(name="inspect")
-def inspect(
-    filename: str = typer.Argument(..., help="Path to the Parquet file to inspect"),
-    format: OutputFormat = typer.Option(
-        OutputFormat.RICH, "--format", "-f", help="Output format (rich or json)"
-    ),
-    metadata_only: bool = typer.Option(
-        False,
-        "--metadata-only",
-        "-m",
-        help="Show only file metadata without column details",
-    ),
-    column_filter: Optional[str] = typer.Option(
-        None, "--column", "-c", help="Filter results to show only specific column"
-    ),
-):
+def inspect_single_file(
+    filename: str,
+    format: OutputFormat,
+    metadata_only: bool,
+    column_filter: Optional[str],
+) -> None:
     """
-    Inspect a Parquet file and display its metadata, compression settings, and bloom filter information.
+    Inspect a single Parquet file and display its metadata, compression settings, and bloom filter information.
+
+    Raises:
+        Exception: If the file cannot be processed.
     """
-    (parquet_metadata, compression) = read_parquet_metadata(filename)
+    try:
+        (parquet_metadata, compression) = read_parquet_metadata(filename)
+    except FileNotFoundError:
+        raise Exception(f"Cannot open: {filename}.")
+    except Exception as e:
+        raise Exception(f"Failed to read metadata: {e}")
 
     # Create metadata model
     meta_model = ParquetMetaModel(
@@ -320,6 +312,62 @@ def inspect(
         if not metadata_only:
             print_column_info_table(column_info)
             console.print(f"Compression codecs: {compression}")
+
+
+@app.command(name="")
+@app.command(name="inspect")
+def inspect(
+    filenames: List[str] = typer.Argument(
+        ..., help="Path(s) or pattern(s) to Parquet files to inspect"
+    ),
+    format: OutputFormat = typer.Option(
+        OutputFormat.RICH, "--format", "-f", help="Output format (rich or json)"
+    ),
+    metadata_only: bool = typer.Option(
+        False,
+        "--metadata-only",
+        "-m",
+        help="Show only file metadata without column details",
+    ),
+    column_filter: Optional[str] = typer.Option(
+        None, "--column", "-c", help="Filter results to show only specific column"
+    ),
+):
+    """
+    Inspect Parquet files and display their metadata, compression settings, and bloom filter information.
+    """
+    # Expand glob patterns and collect all matching files
+    all_files = []
+    for pattern in filenames:
+        matches = glob.glob(pattern)
+        if matches:
+            all_files.extend(matches)
+        else:
+            # If no matches found, treat as literal filename (for better error reporting)
+            all_files.append(pattern)
+
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_files = []
+    for file in all_files:
+        if file not in seen:
+            seen.add(file)
+            unique_files.append(file)
+
+    # Process each file
+    for i, filename in enumerate(unique_files):
+        # For multiple files, add a header to separate results
+        if len(unique_files) > 1:
+            if i > 0:
+                console.print()  # Add blank line between files
+            console.print(f"[bold blue]File: {filename}[/bold blue]")
+            console.print("─" * (len(filename) + 6))
+
+        try:
+            inspect_single_file(filename, format, metadata_only, column_filter)
+        except Exception as e:
+            console.print(f"Error processing {filename}: {e}", style="red")
+            continue
 
 
 if __name__ == "__main__":
