@@ -70,10 +70,10 @@ Read more about bloom filters in this [great article](https://duckdb.org/2025/03
 
 ## Usage
 
-iparq now supports additional options:
+iparq supports inspecting single files, multiple files, and glob patterns:
 
 ```sh
-iparq inspect <filename> [OPTIONS]
+iparq inspect <filename(s)> [OPTIONS]
 ```
 
 Options include:
@@ -82,9 +82,12 @@ Options include:
 - `--metadata-only`, `-m`: Show only file metadata without column details
 - `--column`, `-c`: Filter results to show only a specific column
 
-Examples:
+### Single File Examples:
 
 ```sh
+# Basic inspection
+iparq inspect yourfile.parquet
+
 # Output in JSON format
 iparq inspect yourfile.parquet --format json
 
@@ -95,7 +98,23 @@ iparq inspect yourfile.parquet --metadata-only
 iparq inspect yourfile.parquet --column column_name
 ```
 
-Replace `<filename>` with the path to your .parquet file. The utility will read the metadata of the file and print the compression codecs used in the parquet file.
+### Multiple Files and Glob Patterns:
+
+```sh
+# Inspect multiple specific files
+iparq inspect file1.parquet file2.parquet file3.parquet
+
+# Use glob patterns to inspect all parquet files
+iparq inspect *.parquet
+
+# Use specific patterns
+iparq inspect yellow*.parquet data_*.parquet
+
+# Combine patterns and specific files
+iparq inspect important.parquet temp_*.parquet
+```
+
+When inspecting multiple files, each file's results are displayed with a header showing the filename. The utility will read the metadata of each file and print the compression codecs used in the parquet files.
 
 ## Example ouput - Bloom Filters
 
