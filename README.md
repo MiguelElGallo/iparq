@@ -116,7 +116,7 @@ iparq inspect important.parquet temp_*.parquet
 
 When inspecting multiple files, each file's results are displayed with a header showing the filename. The utility will read the metadata of each file and print the compression codecs used in the parquet files.
 
-## Example ouput - Bloom Filters
+## Example output - Bloom Filters
 
 ```log
 ParquetMetaModel(
