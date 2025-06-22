@@ -189,10 +189,13 @@ def print_bloom_filter_info(parquet_metadata, column_info: ParquetColumnInfo) ->
                 # Find the corresponding column in our model
                 for col in column_info.columns:
                     if col.row_group == i and col.column_index == j:
-                        # Check if this column has bloom filters
+                        # Check if this column has bloom filters using
+                        # the dedicated attribute available in newer
+                        # versions of PyArrow. Fallback to ``False`` if
+                        # the attribute is not present.
                         has_bloom_filter = (
-                            hasattr(column_chunk, "is_stats_set")
-                            and column_chunk.is_stats_set
+                            hasattr(column_chunk, "has_bloom_filter")
+                            and column_chunk.has_bloom_filter
                         )
                         col.has_bloom_filter = has_bloom_filter
                         break

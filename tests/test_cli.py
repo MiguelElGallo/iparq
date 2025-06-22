@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from typer.testing import CliRunner
+import textwrap
 
 from iparq.source import app
 
@@ -13,7 +14,7 @@ fixture_path = FIXTURES_DIR / "dummy.parquet"
 def test_parquet_info():
     """Test that the CLI correctly displays parquet file information."""
     runner = CliRunner()
-    result = runner.invoke(app, ["inspect", str(fixture_path)])
+    result = runner.invoke(app, ["inspect", str(fixture_path)], env={"NO_COLOR": "1"})
 
     assert result.exit_code == 0
 
@@ -25,17 +26,24 @@ def test_parquet_info():
     format_version='2.6',
     serialized_size=2223
 )
-                   Parquet Column Information                   
+                   Parquet Column Information
 ┏━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
 ┃ Row Group ┃ Column Name ┃ Index ┃ Compression ┃ Bloom Filter ┃
 ┡━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
-│     0     │ one         │   0   │ SNAPPY      │      ✅      │
-│     0     │ two         │   1   │ SNAPPY      │      ✅      │
-│     0     │ three       │   2   │ SNAPPY      │      ✅      │
+│     0     │ one         │   0   │ SNAPPY      │      ❌      │
+│     0     │ two         │   1   │ SNAPPY      │      ❌      │
+│     0     │ three       │   2   │ SNAPPY      │      ❌      │
 └───────────┴─────────────┴───────┴─────────────┴──────────────┘
 Compression codecs: {'SNAPPY'}"""
+    expected_output = textwrap.dedent(expected_output)
 
-    assert expected_output in result.stdout
+    # Strip ANSI color codes from output for comparison
+    import re
+    ansi_escape = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+    clean_output = ansi_escape.sub("", result.stdout)
+    clean_output = "\n".join(line.rstrip() for line in clean_output.splitlines())
+
+    assert expected_output in clean_output
 
 
 def test_metadata_only_flag():
