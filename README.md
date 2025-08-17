@@ -120,27 +120,21 @@ When inspecting multiple files, each file's results are displayed with a header 
 
 ```log
 ParquetMetaModel(
-    created_by='DuckDB version v1.2.1 (build 8e52ec4395)',
-    num_columns=1,
-    num_rows=100000000,
-    num_row_groups=10,
-    format_version='1.0',
-    serialized_size=1196
+    created_by='parquet-cpp-arrow version 14.0.2',
+    num_columns=3,
+    num_rows=3,
+    num_row_groups=1,
+    format_version='2.6',
+    serialized_size=2223
 )
-                   Parquet Column Information                   
-┏━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
-┃ Row Group ┃ Column Name ┃ Index ┃ Compression ┃ Bloom Filter ┃
-┡━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
-│     0     │ r           │   0   │ SNAPPY      │      ✅      │
-│     1     │ r           │   0   │ SNAPPY      │      ✅      │
-│     2     │ r           │   0   │ SNAPPY      │      ✅      │
-│     3     │ r           │   0   │ SNAPPY      │      ✅      │
-│     4     │ r           │   0   │ SNAPPY      │      ✅      │
-│     5     │ r           │   0   │ SNAPPY      │      ✅      │
-│     6     │ r           │   0   │ SNAPPY      │      ✅      │
-│     7     │ r           │   0   │ SNAPPY      │      ✅      │
-│     8     │ r           │   0   │ SNAPPY      │      ✅      │
-│     9     │ r           │   0   │ SNAPPY      │      ✅      │
-└───────────┴─────────────┴───────┴─────────────┴──────────────┘
+                            Parquet Column Information                             
+┏━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┓
+┃           ┃ Column     ┃       ┃           ┃   Bloom    ┃           ┃           ┃
+┃ Row Group ┃ Name       ┃ Index ┃ Compress… ┃   Filter   ┃ Min Value ┃ Max Value ┃
+┡━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━┩
+│     0     │ one        │   0   │ SNAPPY    │     ✅     │ -1.0      │ 2.5       │
+│     0     │ two        │   1   │ SNAPPY    │     ✅     │ bar       │ foo       │
+│     0     │ three      │   2   │ SNAPPY    │     ✅     │ False     │ True      │
+└───────────┴────────────┴───────┴───────────┴────────────┴───────────┴───────────┘
 Compression codecs: {'SNAPPY'}
 ```
