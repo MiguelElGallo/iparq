@@ -54,6 +54,9 @@ class ColumnInfo(BaseModel):
         column_index (int): The index of the column.
         compression_type (str): The compression type used for the column.
         has_bloom_filter (bool): Whether the column has a bloom filter.
+        has_min_max (bool): Whether min/max statistics are available.
+        min_value (Optional[str]): The minimum value in the column (as string for display).
+        max_value (Optional[str]): The maximum value in the column (as string for display).
     """
 
     row_group: int
@@ -61,6 +64,9 @@ class ColumnInfo(BaseModel):
     column_index: int
     compression_type: str
     has_bloom_filter: Optional[bool] = False
+    has_min_max: Optional[bool] = False
+    min_value: Optional[str] = None
+    max_value: Optional[str] = None
 
 
 class ParquetColumnInfo(BaseModel):
@@ -203,6 +209,59 @@ def print_bloom_filter_info(parquet_metadata, column_info: ParquetColumnInfo) ->
         )
 
 
+def print_min_max_statistics(parquet_metadata, column_info: ParquetColumnInfo) -> None:
+    """
+    Updates the column_info model with min/max statistics information.
+
+    Args:
+        parquet_metadata: The Parquet file metadata.
+        column_info: The ParquetColumnInfo model to update.
+    """
+    try:
+        num_row_groups = parquet_metadata.num_row_groups
+        num_columns = parquet_metadata.num_columns
+
+        for i in range(num_row_groups):
+            row_group = parquet_metadata.row_group(i)
+
+            for j in range(num_columns):
+                column_chunk = row_group.column(j)
+
+                # Find the corresponding column in our model
+                for col in column_info.columns:
+                    if col.row_group == i and col.column_index == j:
+                        # Check if this column has statistics
+                        if column_chunk.is_stats_set:
+                            stats = column_chunk.statistics
+                            col.has_min_max = stats.has_min_max
+
+                            if stats.has_min_max:
+                                # Convert values to string for display, handling potential None values
+                                try:
+                                    col.min_value = (
+                                        str(stats.min)
+                                        if stats.min is not None
+                                        else "null"
+                                    )
+                                    col.max_value = (
+                                        str(stats.max)
+                                        if stats.max is not None
+                                        else "null"
+                                    )
+                                except Exception:
+                                    # Fallback for complex types that might not stringify well
+                                    col.min_value = "<unable to display>"
+                                    col.max_value = "<unable to display>"
+                        else:
+                            col.has_min_max = False
+                        break
+    except Exception as e:
+        console.print(
+            f"Error while collecting min/max statistics: {e}",
+            style="blink bold red underline on white",
+        )
+
+
 def print_column_info_table(column_info: ParquetColumnInfo) -> None:
     """
     Prints the column information using a Rich table.
@@ -218,15 +277,27 @@ def print_column_info_table(column_info: ParquetColumnInfo) -> None:
     table.add_column("Index", justify="center")
     table.add_column("Compression", style="magenta")
     table.add_column("Bloom Filter", justify="center")
+    table.add_column("Min Value", style="yellow")
+    table.add_column("Max Value", style="yellow")
 
     # Add rows to the table
     for col in column_info.columns:
+        # Format min/max values for display
+        min_display = (
+            col.min_value if col.has_min_max and col.min_value is not None else "N/A"
+        )
+        max_display = (
+            col.max_value if col.has_min_max and col.max_value is not None else "N/A"
+        )
+
         table.add_row(
             str(col.row_group),
             col.column_name,
             str(col.column_index),
             col.compression_type,
             "✅" if col.has_bloom_filter else "❌",
+            min_display,
+            max_display,
         )
 
     # Print the table
@@ -290,6 +361,7 @@ def inspect_single_file(
     # Collect information
     print_compression_types(parquet_metadata, column_info)
     print_bloom_filter_info(parquet_metadata, column_info)
+    print_min_max_statistics(parquet_metadata, column_info)
 
     # Filter columns if requested
     if column_filter:

@@ -172,3 +172,4 @@ cython_debug/
 .github/.DS_Store
 yellow_tripdata_2024-01.parquet
 filter.parquet
+.DS_Store
