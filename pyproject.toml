@@ -1,6 +1,6 @@
 [project]
 name = "iparq"
-version = "0.3.0"
+version = "0.4.0"
 description = "Display version compression and bloom filter information about a parquet file"
 readme = "README.md"
 authors = [
