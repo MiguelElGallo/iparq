@@ -45,6 +45,16 @@ jobs:
             uv run mypy . --config-file=../../pyproject.toml
         - name: Check formatting with black
           run: uvx black . --check --verbose
-        - name: Run Python tests
+        - name: Run Python tests with coverage
           if: runner.os != 'Windows'
-          run: uv run pytest -vv
+          run: uv run pytest -vv --cov=src/iparq --cov-report=xml --cov-report=term-missing
+        
+        - name: Upload coverage to Codecov
+          if: runner.os != 'Windows'
+          uses: codecov/codecov-action@v5
+          with:
+            files: ./coverage.xml
+            fail_ci_if_error: false
+            verbose: true
+          env:
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
