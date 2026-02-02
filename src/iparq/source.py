@@ -314,11 +314,12 @@ def format_size(size_bytes: Optional[int]) -> str:
     """Format bytes into human-readable size."""
     if size_bytes is None:
         return "N/A"
+    size: float = float(size_bytes)
     for unit in ["B", "KB", "MB", "GB"]:
-        if abs(size_bytes) < 1024.0:
-            return f"{size_bytes:.1f}{unit}"
-        size_bytes /= 1024.0
-    return f"{size_bytes:.1f}TB"
+        if abs(size) < 1024.0:
+            return f"{size:.1f}{unit}"
+        size /= 1024.0
+    return f"{size:.1f}TB"
 
 
 def print_column_info_table(
