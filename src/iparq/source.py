@@ -445,7 +445,7 @@ def inspect_single_file(
         Exception: If the file cannot be processed.
     """
     try:
-        (parquet_metadata, compression) = read_parquet_metadata(filename)
+        parquet_metadata, compression = read_parquet_metadata(filename)
     except FileNotFoundError:
         raise Exception(f"Cannot open: {filename}.")
     except Exception as e:
