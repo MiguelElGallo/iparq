@@ -92,7 +92,7 @@ Options include:
 ### Single File Examples:
 
 ```sh
-# Basic inspection
+# Basic inspection .
 iparq inspect yourfile.parquet
 
 # Output in JSON format
