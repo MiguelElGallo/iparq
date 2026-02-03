@@ -57,6 +57,12 @@ class ColumnInfo(BaseModel):
         has_min_max (bool): Whether min/max statistics are available.
         min_value (Optional[str]): The minimum value in the column (as string for display).
         max_value (Optional[str]): The maximum value in the column (as string for display).
+        is_min_exact (Optional[bool]): Whether the min value is exact (PyArrow 22+).
+        is_max_exact (Optional[bool]): Whether the max value is exact (PyArrow 22+).
+        is_encrypted (Optional[bool]): Whether the column is encrypted.
+        num_values (Optional[int]): Number of values in this column chunk.
+        total_compressed_size (Optional[int]): Total compressed size in bytes.
+        total_uncompressed_size (Optional[int]): Total uncompressed size in bytes.
     """
 
     row_group: int
@@ -67,6 +73,12 @@ class ColumnInfo(BaseModel):
     has_min_max: Optional[bool] = False
     min_value: Optional[str] = None
     max_value: Optional[str] = None
+    is_min_exact: Optional[bool] = None
+    is_max_exact: Optional[bool] = None
+    is_encrypted: Optional[bool] = None
+    num_values: Optional[int] = None
+    total_compressed_size: Optional[int] = None
+    total_uncompressed_size: Optional[int] = None
 
 
 class ParquetColumnInfo(BaseModel):
@@ -158,6 +170,28 @@ def print_compression_types(parquet_metadata, column_info: ParquetColumnInfo) ->
                 compression = column_chunk.compression
                 column_name = parquet_metadata.schema.names[j]
 
+                # Get additional column chunk metadata
+                num_values = (
+                    column_chunk.num_values
+                    if hasattr(column_chunk, "num_values")
+                    else None
+                )
+                total_compressed = (
+                    column_chunk.total_compressed_size
+                    if hasattr(column_chunk, "total_compressed_size")
+                    else None
+                )
+                total_uncompressed = (
+                    column_chunk.total_uncompressed_size
+                    if hasattr(column_chunk, "total_uncompressed_size")
+                    else None
+                )
+                is_encrypted = (
+                    column_chunk.is_crypto_metadata_set()
+                    if hasattr(column_chunk, "is_crypto_metadata_set")
+                    else None
+                )
+
                 # Create or update column info
                 column_info.columns.append(
                     ColumnInfo(
@@ -165,6 +199,10 @@ def print_compression_types(parquet_metadata, column_info: ParquetColumnInfo) ->
                         column_name=column_name,
                         column_index=j,
                         compression_type=compression,
+                        num_values=num_values,
+                        total_compressed_size=total_compressed,
+                        total_uncompressed_size=total_uncompressed,
+                        is_encrypted=is_encrypted,
                     )
                 )
     except Exception as e:
@@ -252,6 +290,16 @@ def print_min_max_statistics(parquet_metadata, column_info: ParquetColumnInfo) -
                                     # Fallback for complex types that might not stringify well
                                     col.min_value = "<unable to display>"
                                     col.max_value = "<unable to display>"
+
+                                # PyArrow 22+ feature: check if min/max values are exact
+                                # This helps users understand if statistics can be trusted for query optimization
+                                try:
+                                    if hasattr(stats, "is_min_value_exact"):
+                                        col.is_min_exact = stats.is_min_value_exact
+                                    if hasattr(stats, "is_max_value_exact"):
+                                        col.is_max_exact = stats.is_max_value_exact
+                                except Exception:
+                                    pass  # Not available in older PyArrow versions
                         else:
                             col.has_min_max = False
                         break
@@ -262,12 +310,27 @@ def print_min_max_statistics(parquet_metadata, column_info: ParquetColumnInfo) -
         )
 
 
-def print_column_info_table(column_info: ParquetColumnInfo) -> None:
+def format_size(size_bytes: Optional[int]) -> str:
+    """Format bytes into human-readable size."""
+    if size_bytes is None:
+        return "N/A"
+    size: float = float(size_bytes)
+    for unit in ["B", "KB", "MB", "GB"]:
+        if abs(size) < 1024.0:
+            return f"{size:.1f}{unit}"
+        size /= 1024.0
+    return f"{size:.1f}TB"
+
+
+def print_column_info_table(
+    column_info: ParquetColumnInfo, show_sizes: bool = False
+) -> None:
     """
     Prints the column information using a Rich table.
 
     Args:
         column_info: The ParquetColumnInfo model to display.
+        show_sizes: Whether to show compressed/uncompressed size columns.
     """
     table = Table(title="Parquet Column Information")
 
@@ -276,9 +339,18 @@ def print_column_info_table(column_info: ParquetColumnInfo) -> None:
     table.add_column("Column Name", style="green")
     table.add_column("Index", justify="center")
     table.add_column("Compression", style="magenta")
-    table.add_column("Bloom Filter", justify="center")
+    table.add_column("Bloom", justify="center")
+    table.add_column("Encrypted", justify="center")
     table.add_column("Min Value", style="yellow")
     table.add_column("Max Value", style="yellow")
+    table.add_column(
+        "Exact", justify="center", style="dim"
+    )  # Shows if min/max are exact
+
+    if show_sizes:
+        table.add_column("Values", justify="right")
+        table.add_column("Compressed", justify="right", style="blue")
+        table.add_column("Ratio", justify="right", style="blue")
 
     # Add rows to the table
     for col in column_info.columns:
@@ -290,15 +362,48 @@ def print_column_info_table(column_info: ParquetColumnInfo) -> None:
             col.max_value if col.has_min_max and col.max_value is not None else "N/A"
         )
 
-        table.add_row(
+        # Format exactness indicator (PyArrow 22+ feature)
+        exact_display = "N/A"
+        if col.is_min_exact is not None and col.is_max_exact is not None:
+            if col.is_min_exact and col.is_max_exact:
+                exact_display = "✅"
+            elif col.is_min_exact or col.is_max_exact:
+                exact_display = "~"  # Partially exact
+            else:
+                exact_display = "❌"
+
+        # Format encryption status
+        encrypted_display = "🔒" if col.is_encrypted else "—"
+
+        row_data = [
             str(col.row_group),
             col.column_name,
             str(col.column_index),
             col.compression_type,
             "✅" if col.has_bloom_filter else "❌",
+            encrypted_display,
             min_display,
             max_display,
-        )
+            exact_display,
+        ]
+
+        if show_sizes:
+            # Calculate compression ratio
+            ratio = "N/A"
+            if col.total_compressed_size and col.total_uncompressed_size:
+                ratio = (
+                    f"{col.total_uncompressed_size / col.total_compressed_size:.1f}x"
+                )
+
+            row_data.extend(
+                [
+                    str(col.num_values) if col.num_values else "N/A",
+                    format_size(col.total_compressed_size),
+                    ratio,
+                ]
+            )
+
+        table.add_row(*row_data)
 
     # Print the table
     console.print(table)
@@ -331,6 +436,7 @@ def inspect_single_file(
     format: OutputFormat,
     metadata_only: bool,
     column_filter: Optional[str],
+    show_sizes: bool = False,
 ) -> None:
     """
     Inspect a single Parquet file and display its metadata, compression settings, and bloom filter information.
@@ -339,7 +445,7 @@ def inspect_single_file(
         Exception: If the file cannot be processed.
     """
     try:
-        (parquet_metadata, compression) = read_parquet_metadata(filename)
+        parquet_metadata, compression = read_parquet_metadata(filename)
     except FileNotFoundError:
         raise Exception(f"Cannot open: {filename}.")
     except Exception as e:
@@ -382,7 +488,7 @@ def inspect_single_file(
 
         # Print column details if not metadata only
         if not metadata_only:
-            print_column_info_table(column_info)
+            print_column_info_table(column_info, show_sizes=show_sizes)
             console.print(f"Compression codecs: {compression}")
 
 
@@ -403,6 +509,12 @@ def inspect(
     ),
     column_filter: Optional[str] = typer.Option(
         None, "--column", "-c", help="Filter results to show only specific column"
+    ),
+    show_sizes: bool = typer.Option(
+        False,
+        "--sizes",
+        "-s",
+        help="Show column sizes and compression ratios",
     ),
 ):
     """
@@ -436,7 +548,9 @@ def inspect(
             console.print("─" * (len(filename) + 6))
 
         try:
-            inspect_single_file(filename, format, metadata_only, column_filter)
+            inspect_single_file(
+                filename, format, metadata_only, column_filter, show_sizes
+            )
         except Exception as e:
             console.print(f"Error processing {filename}: {e}", style="red")
             continue
