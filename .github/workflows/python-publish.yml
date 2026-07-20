@@ -47,8 +47,7 @@ jobs:
         run: uv run ty check
 
       - name: Run tests
-        run: |
-          uv run pytest -v
+        run: uv run pytest -v --cov=src/iparq --cov-report=html
 
       - name: Test package build
         run: |
@@ -131,6 +130,8 @@ jobs:
           path: dist/
 
       - name: Publish release distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@2834a314042ef964da07689278dd1e9d773e8afd # v1.14.1
+        # This container action maps its ref to a GHCR image tag, so a commit SHA
+        # cannot resolve. Use the exact release tag recommended by the publisher.
+        uses: pypa/gh-action-pypi-publish@v1.14.1
         with:
           packages-dir: dist/
