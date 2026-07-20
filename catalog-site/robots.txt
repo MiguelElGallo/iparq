@@ -1,0 +1,4 @@
+Agentmap: https://miguelelgallo.github.io/iparq/.well-known/ai-catalog.json
+
+User-agent: *
+Allow: /

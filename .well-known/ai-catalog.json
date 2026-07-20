@@ -1,0 +1,58 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "iParq",
+    "identifier": "github.com",
+    "documentationUrl": "https://github.com/MiguelElGallo/iparq"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:github.com:MiguelElGallo:iparq:parquet-inspector",
+      "displayName": "iParq Parquet Inspector",
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://raw.githubusercontent.com/MiguelElGallo/iparq/main/.agents/skills/iparq-parquet-inspector/SKILL.md",
+      "description": "Inspect Parquet metadata, compression, encodings, physical and logical types, row groups, statistics, indexes, dictionary pages, Bloom filters, and storage sizes through a read-only CLI with machine-readable JSON output.",
+      "tags": [
+        "parquet",
+        "metadata",
+        "compression",
+        "encoding",
+        "bloom-filter",
+        "data-engineering",
+        "cli"
+      ],
+      "capabilities": [
+        "InspectParquetMetadata",
+        "CompareParquetFiles",
+        "DetectParquetBloomFilters",
+        "AnalyzeParquetCompression",
+        "EmitParquetMetadataJson"
+      ],
+      "representativeQueries": [
+        "inspect the compression and encodings used in this Parquet file",
+        "does this Parquet file contain Bloom filters or page indexes",
+        "show the row groups statistics and physical and logical types in this Parquet file",
+        "compare storage metadata across these Parquet files",
+        "produce machine-readable metadata for this Parquet file"
+      ],
+      "version": "0.6.0",
+      "updatedAt": "2026-07-20T00:00:00Z",
+      "metadata": {
+        "package": "https://pypi.org/project/iparq/",
+        "sourceRepository": "https://github.com/MiguelElGallo/iparq",
+        "sourcePath": ".agents/skills/iparq-parquet-inspector",
+        "invocation": "uvx --refresh iparq inspect FILE.parquet --format json --details --sizes"
+      },
+      "trustManifest": {
+        "identity": "https://github.com/MiguelElGallo/iparq",
+        "identityType": "https",
+        "provenance": [
+          {
+            "relation": "publishedFrom",
+            "sourceId": "https://github.com/MiguelElGallo/iparq"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -139,6 +139,13 @@ object; multiple files produce one JSON array whose entries include `file`.
 Diagnostics are written to stderr, and any unreadable input makes the command
 exit non-zero without corrupting successful JSON output.
 
+## Agent discovery
+
+iParq publishes an [Agentic Resource Discovery (ARD) catalog](https://miguelelgallo.github.io/iparq/.well-known/ai-catalog.json)
+and a portable [Parquet inspection skill](.agents/skills/iparq-parquet-inspector/SKILL.md)
+for AI clients. The catalog advertises the existing read-only CLI and its JSON
+output; it does not add a network service or change how iParq accesses files.
+
 ## Example output
 
 ```log
