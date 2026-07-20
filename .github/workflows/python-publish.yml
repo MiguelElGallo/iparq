@@ -18,33 +18,33 @@ jobs:
   test-and-validate:
     permissions:
       contents: read
-      pull-requests: write
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
 
       - name: "Set up Python"
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version-file: "pyproject.toml"
+          python-version-file: ".python-version"
 
-      - name: Update dependencies and sync
-        run: |
-          uv lock --upgrade
-          uv sync --all-extras
+      - name: Sync locked dependencies
+        run: uv sync --all-extras --locked
 
       - name: Run linting
-        run: |
-          uv run ruff check .
+        run: uv run ruff check .
+
+      - name: Check formatting
+        run: uv run ruff format --check .
 
       - name: Run type checking
-        run: |
-          cd src/iparq
-          uv run mypy . --config-file=../../pyproject.toml
+        run: uv run mypy src/iparq --config-file=pyproject.toml
+
+      - name: Run ty
+        run: uv run ty check
 
       - name: Run tests
         run: |
@@ -59,14 +59,18 @@ jobs:
           # Test that the built package can be installed and imported
           python -m venv test_install_env
           source test_install_env/bin/activate
-          # Install the latest wheel file
-          pip install $(ls -t dist/*.whl | head -1)
+          python -m pip install dist/*.whl
           python -c "import iparq; print(f'Successfully imported iparq version {iparq.__version__}')"
           iparq --help
+          iparq inspect tests/dummy.parquet --format json | python -m json.tool > /dev/null
+          if iparq inspect does-not-exist.parquet; then
+            echo "Missing files must return a non-zero exit code"
+            exit 1
+          fi
           deactivate
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: test-results
@@ -77,32 +81,29 @@ jobs:
   release-build:
     permissions:
       contents: read
-      pull-requests: write
     runs-on: ubuntu-latest
     needs: test-and-validate
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
 
       - name: "Set up Python"
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version-file: "pyproject.toml"
+          python-version-file: ".python-version"
 
-      - name: Update dependencies and sync
-        run: |
-          uv lock --upgrade
-          uv sync --all-extras
+      - name: Sync locked dependencies
+        run: uv sync --all-extras --locked
 
       - name: Build release distributions
         run: |
           uv build
 
       - name: Upload distributions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-dists
           path: dist/
@@ -120,21 +121,16 @@ jobs:
     # For more information, see: https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#deployment-protection-rules
     environment:
       name: pypi
-      # OPTIONAL: uncomment and update to include your PyPI project URL in the deployment status:
-      # url: https://pypi.org/p/YOURPROJECT
-      #
-      # ALTERNATIVE: if your GitHub Release name is the PyPI project version string
-      # ALTERNATIVE: exactly, uncomment the following line instead:
-      # url: https://pypi.org/project/YOURPROJECT/${{ github.event.release.name }}
+      url: https://pypi.org/project/iparq/
 
     steps:
       - name: Retrieve release distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-dists
           path: dist/
 
       - name: Publish release distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@2834a314042ef964da07689278dd1e9d773e8afd # v1.14.1
         with:
           packages-dir: dist/
