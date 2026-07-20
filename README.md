@@ -13,10 +13,14 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
 
 ## Features
 
-- **Bloom filters**: Displays if columns have bloom filters. Read more in this [great article](https://duckdb.org/2025/03/07/parquet-bloom-filters-in-duckdb.html).
-- **Encryption detection**: Shows if columns are encrypted (🔒)
-- **Statistics exactness**: Indicates if min/max statistics are exact or approximate (PyArrow 22+)
-- **Compression ratios**: Optional display of column sizes and compression efficiency
+- **Bloom filters**: Detects real Bloom-filter metadata and reports its size. Read more in this [great article](https://duckdb.org/2025/03/07/parquet-bloom-filters-in-duckdb.html).
+- **Encodings and types**: Shows physical and logical types plus encodings such as `RLE_DICTIONARY`, `DELTA_BINARY_PACKED`, and `BYTE_STREAM_SPLIT`.
+- **Indexes and dictionary pages**: Reports dictionary pages, column indexes, and offset indexes.
+- **Statistics**: Displays min/max values and available null and distinct counts.
+- **Compression**: Shows codecs with optional column sizes and compression ratios.
+- **Machine-readable output**: Emits JSON for scripts and agent workflows.
+
+iParq requires Python 3.10 or later.
 
 ## Installation
 
@@ -88,6 +92,7 @@ Options include:
 - `--metadata-only`, `-m`: Show only file metadata without column details
 - `--column`, `-c`: Filter results to show only a specific column
 - `--sizes`, `-s`: Show column sizes and compression ratios
+- `--details`, `-d`: Show encodings, types, indexes, Bloom-filter size, and detailed statistics
 
 ### Single File Examples:
 
@@ -106,6 +111,9 @@ iparq inspect yourfile.parquet --column column_name
 
 # Show column sizes and compression ratios
 iparq inspect yourfile.parquet --sizes
+
+# Show storage-level details
+iparq inspect yourfile.parquet --details
 ```
 
 ### Multiple Files and Glob Patterns:
@@ -126,6 +134,11 @@ iparq inspect important.parquet temp_*.parquet
 
 When inspecting multiple files, each file's results are displayed with a header showing the filename. The utility will read the metadata of each file and print the compression codecs used in the parquet files.
 
+For scripts and agents, add `--format json`. A single file produces one JSON
+object; multiple files produce one JSON array whose entries include `file`.
+Diagnostics are written to stderr, and any unreadable input makes the command
+exit non-zero without corrupting successful JSON output.
+
 ## Example output
 
 ```log
@@ -138,13 +151,13 @@ ParquetMetaModel(
     serialized_size=2223
 )
                                      Parquet Column Information                                      
-┏━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━┓
-┃ Row Group ┃ Column Name ┃ Index ┃ Compression ┃ Bloom ┃ Encrypted ┃ Min Value ┃ Max Value ┃ Exact ┃
-┡━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━┩
-│     0     │ one         │   0   │ SNAPPY      │  ✅   │     —     │ -1.0      │ 2.5       │  N/A  │
-│     0     │ two         │   1   │ SNAPPY      │  ✅   │     —     │ bar       │ foo       │  N/A  │
-│     0     │ three       │   2   │ SNAPPY      │  ✅   │     —     │ False     │ True      │  N/A  │
-└───────────┴─────────────┴───────┴─────────────┴───────┴───────────┴───────────┴───────────┴───────┘
+┏━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┓
+┃ Row Group ┃ Column Name ┃ Index ┃ Compression ┃ Bloom ┃ Min Value ┃ Max Value ┃
+┡━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━┩
+│     0     │ one         │   0   │ SNAPPY      │  ❌   │ -1.0      │ 2.5       │
+│     0     │ two         │   1   │ SNAPPY      │  ❌   │ bar       │ foo       │
+│     0     │ three       │   2   │ SNAPPY      │  ❌   │ False     │ True      │
+└───────────┴─────────────┴───────┴─────────────┴───────┴───────────┴───────────┘
 Compression codecs: {'SNAPPY'}
 ```
 
@@ -154,12 +167,12 @@ Compression codecs: {'SNAPPY'}
 iparq inspect yourfile.parquet --sizes
 
                                          Parquet Column Information                                         
-┏━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━━┳━━━━━━━┓
-┃  Row   ┃ Column  ┃       ┃        ┃       ┃         ┃ Min    ┃ Max     ┃       ┃        ┃        ┃       ┃
-┃ Group  ┃ Name    ┃ Index ┃ Compr… ┃ Bloom ┃ Encryp… ┃ Value  ┃ Value   ┃ Exact ┃ Values ┃ Compr… ┃ Ratio ┃
-┡━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━━╇━━━━━━━┩
-│   0    │ one     │   0   │ SNAPPY │  ✅   │    —    │ -1.0   │ 2.5     │  N/A  │      3 │ 104.0B │  1.0x │
-│   0    │ two     │   1   │ SNAPPY │  ✅   │    —    │ bar    │ foo     │  N/A  │      3 │  80.0B │  0.9x │
-│   0    │ three   │   2   │ SNAPPY │  ✅   │    —    │ False  │ True    │  N/A  │      3 │  42.0B │  1.0x │
-└────────┴─────────┴───────┴────────┴───────┴─────────┴────────┴─────────┴───────┴────────┴────────┴───────┘
+┏━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━┳━━━━━━━┓
+┃  Row   ┃ Column  ┃       ┃        ┃       ┃           ┃           ┃        ┃        ┃       ┃
+┃ Group  ┃ Name    ┃ Index ┃ Compr… ┃ Bloom ┃ Min Value ┃ Max Value ┃ Values ┃ Compr… ┃ Ratio ┃
+┡━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━╇━━━━━━━┩
+│   0    │ one     │   0   │ SNAPPY │  ❌   │ -1.0      │ 2.5       │      3 │ 104.0B │  1.0x │
+│   0    │ two     │   1   │ SNAPPY │  ❌   │ bar       │ foo       │      3 │  80.0B │  0.9x │
+│   0    │ three   │   2   │ SNAPPY │  ❌   │ False     │ True      │      3 │  42.0B │  1.0x │
+└────────┴─────────┴───────┴────────┴───────┴───────────┴───────────┴────────┴────────┴───────┘
 ```

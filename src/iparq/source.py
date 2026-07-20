@@ -5,8 +5,7 @@ from typing import List, Optional
 
 import pyarrow.parquet as pq
 import typer
-from pydantic import BaseModel
-from rich import print
+from pydantic import BaseModel, Field
 from rich.console import Console
 from rich.table import Table
 
@@ -14,6 +13,7 @@ app = typer.Typer(
     help="Inspect Parquet files for metadata, compression, and bloom filters"
 )
 console = Console()
+error_console = Console(stderr=True)
 
 
 class OutputFormat(str, Enum):
@@ -53,10 +53,20 @@ class ColumnInfo(BaseModel):
         column_name (str): The name of the column.
         column_index (int): The index of the column.
         compression_type (str): The compression type used for the column.
+        physical_type (str): The Parquet physical type of the column.
+        logical_type (Optional[str]): The Parquet logical type, when present.
+        encodings (List[str]): Encodings used by the column chunk.
         has_bloom_filter (bool): Whether the column has a bloom filter.
+        bloom_filter_offset (Optional[int]): Bloom filter offset in the file.
+        bloom_filter_length (Optional[int]): Bloom filter size in bytes.
+        has_dictionary_page (bool): Whether a dictionary page is present.
+        has_column_index (bool): Whether a page-level column index is present.
+        has_offset_index (bool): Whether a page-level offset index is present.
         has_min_max (bool): Whether min/max statistics are available.
         min_value (Optional[str]): The minimum value in the column (as string for display).
         max_value (Optional[str]): The maximum value in the column (as string for display).
+        null_count (Optional[int]): Number of null values reported in statistics.
+        distinct_count (Optional[int]): Distinct values reported in statistics.
         is_min_exact (Optional[bool]): Whether the min value is exact (PyArrow 22+).
         is_max_exact (Optional[bool]): Whether the max value is exact (PyArrow 22+).
         is_encrypted (Optional[bool]): Whether the column is encrypted.
@@ -69,10 +79,20 @@ class ColumnInfo(BaseModel):
     column_name: str
     column_index: int
     compression_type: str
-    has_bloom_filter: Optional[bool] = False
-    has_min_max: Optional[bool] = False
+    physical_type: str = "UNKNOWN"
+    logical_type: Optional[str] = None
+    encodings: List[str] = Field(default_factory=list)
+    has_bloom_filter: bool = False
+    bloom_filter_offset: Optional[int] = None
+    bloom_filter_length: Optional[int] = None
+    has_dictionary_page: bool = False
+    has_column_index: bool = False
+    has_offset_index: bool = False
+    has_min_max: bool = False
     min_value: Optional[str] = None
     max_value: Optional[str] = None
+    null_count: Optional[int] = None
+    distinct_count: Optional[int] = None
     is_min_exact: Optional[bool] = None
     is_max_exact: Optional[bool] = None
     is_encrypted: Optional[bool] = None
@@ -89,7 +109,7 @@ class ParquetColumnInfo(BaseModel):
         columns (List[ColumnInfo]): List of column information.
     """
 
-    columns: List[ColumnInfo] = []
+    columns: List[ColumnInfo] = Field(default_factory=list)
 
 
 def read_parquet_metadata(filename: str):
@@ -168,7 +188,11 @@ def print_compression_types(parquet_metadata, column_info: ParquetColumnInfo) ->
             for j in range(num_columns):
                 column_chunk = row_group.column(j)
                 compression = column_chunk.compression
-                column_name = parquet_metadata.schema.names[j]
+                column_name = column_chunk.path_in_schema
+                schema_column = parquet_metadata.schema.column(j)
+                logical_type: Optional[str] = str(schema_column.logical_type)
+                if logical_type == "None":
+                    logical_type = None
 
                 # Get additional column chunk metadata
                 num_values = (
@@ -199,6 +223,12 @@ def print_compression_types(parquet_metadata, column_info: ParquetColumnInfo) ->
                         column_name=column_name,
                         column_index=j,
                         compression_type=compression,
+                        physical_type=column_chunk.physical_type,
+                        logical_type=logical_type,
+                        encodings=list(column_chunk.encodings),
+                        has_dictionary_page=column_chunk.has_dictionary_page,
+                        has_column_index=column_chunk.has_column_index,
+                        has_offset_index=column_chunk.has_offset_index,
                         num_values=num_values,
                         total_compressed_size=total_compressed,
                         total_uncompressed_size=total_uncompressed,
@@ -233,12 +263,11 @@ def print_bloom_filter_info(parquet_metadata, column_info: ParquetColumnInfo) ->
                 # Find the corresponding column in our model
                 for col in column_info.columns:
                     if col.row_group == i and col.column_index == j:
-                        # Check if this column has bloom filters
-                        has_bloom_filter = (
-                            hasattr(column_chunk, "is_stats_set")
-                            and column_chunk.is_stats_set
-                        )
-                        col.has_bloom_filter = has_bloom_filter
+                        col.bloom_filter_offset = column_chunk.bloom_filter_offset
+                        col.bloom_filter_length = column_chunk.bloom_filter_length
+                        # The offset has existed since Bloom filters were introduced.
+                        # Length was added later and can be absent in older valid files.
+                        col.has_bloom_filter = col.bloom_filter_offset is not None
                         break
     except Exception as e:
         console.print(
@@ -272,6 +301,14 @@ def print_min_max_statistics(parquet_metadata, column_info: ParquetColumnInfo) -
                         if column_chunk.is_stats_set:
                             stats = column_chunk.statistics
                             col.has_min_max = stats.has_min_max
+                            col.null_count = (
+                                stats.null_count if stats.has_null_count else None
+                            )
+                            col.distinct_count = (
+                                stats.distinct_count
+                                if stats.has_distinct_count
+                                else None
+                            )
 
                             if stats.has_min_max:
                                 # Convert values to string for display, handling potential None values
@@ -340,12 +377,8 @@ def print_column_info_table(
     table.add_column("Index", justify="center")
     table.add_column("Compression", style="magenta")
     table.add_column("Bloom", justify="center")
-    table.add_column("Encrypted", justify="center")
     table.add_column("Min Value", style="yellow")
     table.add_column("Max Value", style="yellow")
-    table.add_column(
-        "Exact", justify="center", style="dim"
-    )  # Shows if min/max are exact
 
     if show_sizes:
         table.add_column("Values", justify="right")
@@ -362,29 +395,14 @@ def print_column_info_table(
             col.max_value if col.has_min_max and col.max_value is not None else "N/A"
         )
 
-        # Format exactness indicator (PyArrow 22+ feature)
-        exact_display = "N/A"
-        if col.is_min_exact is not None and col.is_max_exact is not None:
-            if col.is_min_exact and col.is_max_exact:
-                exact_display = "✅"
-            elif col.is_min_exact or col.is_max_exact:
-                exact_display = "~"  # Partially exact
-            else:
-                exact_display = "❌"
-
-        # Format encryption status
-        encrypted_display = "🔒" if col.is_encrypted else "—"
-
         row_data = [
             str(col.row_group),
             col.column_name,
             str(col.column_index),
             col.compression_type,
             "✅" if col.has_bloom_filter else "❌",
-            encrypted_display,
             min_display,
             max_display,
-            exact_display,
         ]
 
         if show_sizes:
@@ -409,10 +427,71 @@ def print_column_info_table(
     console.print(table)
 
 
+def print_storage_details_table(column_info: ParquetColumnInfo) -> None:
+    """Print storage-level metadata exposed by PyArrow 25 and later."""
+    encoding_table = Table(title="Parquet Encoding Details")
+    encoding_table.add_column("RG", justify="center", style="cyan")
+    encoding_table.add_column("Column", style="green")
+    encoding_table.add_column("Physical", style="magenta")
+    encoding_table.add_column("Logical")
+    encoding_table.add_column("Encodings")
+
+    index_table = Table(title="Parquet Index and Statistics Details")
+    index_table.add_column("RG", justify="center", style="cyan")
+    index_table.add_column("Column", style="green")
+    index_table.add_column("Dictionary", justify="center")
+    index_table.add_column("Column Index", justify="center")
+    index_table.add_column("Offset Index", justify="center")
+    index_table.add_column("Bloom Size", justify="right")
+    index_table.add_column("Nulls", justify="right")
+    index_table.add_column("Distinct", justify="right")
+
+    for col in column_info.columns:
+        encoding_table.add_row(
+            str(col.row_group),
+            col.column_name,
+            col.physical_type,
+            col.logical_type or "—",
+            ", ".join(col.encodings) or "—",
+        )
+        index_table.add_row(
+            str(col.row_group),
+            col.column_name,
+            "✅" if col.has_dictionary_page else "—",
+            "✅" if col.has_column_index else "—",
+            "✅" if col.has_offset_index else "—",
+            format_size(col.bloom_filter_length),
+            str(col.null_count) if col.null_count is not None else "N/A",
+            str(col.distinct_count) if col.distinct_count is not None else "N/A",
+        )
+
+    console.print(encoding_table)
+    console.print(index_table)
+
+
+def build_json_result(
+    meta_model: ParquetMetaModel,
+    column_info: ParquetColumnInfo,
+    compression_codecs: set,
+    metadata_only: bool = False,
+) -> dict[str, object]:
+    """Build a JSON-serializable result without writing to stdout."""
+    result: dict[str, object] = {"metadata": meta_model.model_dump()}
+    if not metadata_only:
+        result.update(
+            {
+                "columns": [column.model_dump() for column in column_info.columns],
+                "compression_codecs": sorted(compression_codecs),
+            }
+        )
+    return result
+
+
 def output_json(
     meta_model: ParquetMetaModel,
     column_info: ParquetColumnInfo,
     compression_codecs: set,
+    metadata_only: bool = False,
 ) -> None:
     """
     Outputs the parquet information in JSON format.
@@ -422,12 +501,9 @@ def output_json(
         column_info: The column information model
         compression_codecs: Set of compression codecs used
     """
-    result = {
-        "metadata": meta_model.model_dump(),
-        "columns": [column.model_dump() for column in column_info.columns],
-        "compression_codecs": list(compression_codecs),
-    }
-
+    result = build_json_result(
+        meta_model, column_info, compression_codecs, metadata_only=metadata_only
+    )
     print(json.dumps(result, indent=2))
 
 
@@ -437,7 +513,8 @@ def inspect_single_file(
     metadata_only: bool,
     column_filter: Optional[str],
     show_sizes: bool = False,
-) -> None:
+    show_details: bool = False,
+) -> Optional[dict[str, object]]:
     """
     Inspect a single Parquet file and display its metadata, compression settings, and bloom filter information.
 
@@ -475,13 +552,16 @@ def inspect_single_file(
             col for col in column_info.columns if col.column_name == column_filter
         ]
         if not column_info.columns:
-            console.print(
+            destination = error_console if format == OutputFormat.JSON else console
+            destination.print(
                 f"No columns match the filter: {column_filter}", style="yellow"
             )
 
     # Output based on format selection
     if format == OutputFormat.JSON:
-        output_json(meta_model, column_info, compression)
+        return build_json_result(
+            meta_model, column_info, compression, metadata_only=metadata_only
+        )
     else:  # Rich format
         # Print the metadata
         console.print(meta_model)
@@ -489,7 +569,10 @@ def inspect_single_file(
         # Print column details if not metadata only
         if not metadata_only:
             print_column_info_table(column_info, show_sizes=show_sizes)
+            if show_details:
+                print_storage_details_table(column_info)
             console.print(f"Compression codecs: {compression}")
+    return None
 
 
 @app.command(name="")
@@ -516,6 +599,12 @@ def inspect(
         "-s",
         help="Show column sizes and compression ratios",
     ),
+    show_details: bool = typer.Option(
+        False,
+        "--details",
+        "-d",
+        help="Show encodings, types, indexes, and detailed statistics",
+    ),
 ):
     """
     Inspect Parquet files and display their metadata, compression settings, and bloom filter information.
@@ -539,21 +628,42 @@ def inspect(
             unique_files.append(file)
 
     # Process each file
+    had_errors = False
+    json_results: list[dict[str, object]] = []
     for i, filename in enumerate(unique_files):
         # For multiple files, add a header to separate results
-        if len(unique_files) > 1:
+        if format == OutputFormat.RICH and len(unique_files) > 1:
             if i > 0:
                 console.print()  # Add blank line between files
             console.print(f"[bold blue]File: {filename}[/bold blue]")
             console.print("─" * (len(filename) + 6))
 
         try:
-            inspect_single_file(
-                filename, format, metadata_only, column_filter, show_sizes
+            result = inspect_single_file(
+                filename,
+                format,
+                metadata_only,
+                column_filter,
+                show_sizes,
+                show_details,
             )
+            if result is not None:
+                if len(unique_files) > 1:
+                    result = {"file": filename, **result}
+                json_results.append(result)
         except Exception as e:
-            console.print(f"Error processing {filename}: {e}", style="red")
+            error_console.print(f"Error processing {filename}: {e}", style="red")
+            had_errors = True
             continue
+
+    if format == OutputFormat.JSON and json_results:
+        payload: object = json_results[0] if len(unique_files) == 1 else json_results
+        print(json.dumps(payload, indent=2))
+    elif format == OutputFormat.JSON and len(unique_files) > 1:
+        print("[]")
+
+    if had_errors:
+        raise typer.Exit(code=1)
 
 
 if __name__ == "__main__":

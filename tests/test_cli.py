@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
+import pyarrow as pa
+import pyarrow.parquet as pq
 from typer.testing import CliRunner
 
 from iparq.source import (
@@ -10,6 +13,7 @@ from iparq.source import (
     app,
     format_size,
     output_json,
+    print_bloom_filter_info,
 )
 
 # Define path to test fixtures
@@ -79,9 +83,19 @@ def test_json_output():
     assert "columns" in data
     assert "compression_codecs" in data
     assert data["metadata"]["num_columns"] == 3
+    assert data["compression_codecs"] == ["SNAPPY"]
 
     # Check that min/max statistics are included
     for column in data["columns"]:
+        assert "physical_type" in column
+        assert "logical_type" in column
+        assert "encodings" in column
+        assert "bloom_filter_offset" in column
+        assert "bloom_filter_length" in column
+        assert "has_column_index" in column
+        assert "has_offset_index" in column
+        assert "null_count" in column
+        assert "distinct_count" in column
         assert "has_min_max" in column
         assert "min_value" in column
         assert "max_value" in column
@@ -89,6 +103,66 @@ def test_json_output():
         assert column["has_min_max"] is True
         assert column["min_value"] is not None
         assert column["max_value"] is not None
+
+
+def test_json_preserves_rich_markup_like_values(tmp_path: Path):
+    """JSON output must not interpret Parquet strings as Rich markup."""
+    parquet_path = tmp_path / "markup.parquet"
+    value = "[red]secret[/red]"
+    pq.write_table(pa.table({"value": [value]}), parquet_path)
+
+    result = CliRunner().invoke(app, ["inspect", "--format", "json", str(parquet_path)])
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert data["columns"][0]["min_value"] == value
+    assert data["columns"][0]["max_value"] == value
+
+
+def test_multiple_file_json_is_one_document(tmp_path: Path):
+    """Multiple JSON results are emitted as a single array with filenames."""
+    second_path = tmp_path / "second.parquet"
+    pq.write_table(pa.table({"value": [1, 2]}), second_path)
+
+    result = CliRunner().invoke(
+        app,
+        ["inspect", "--format", "json", str(fixture_path), str(second_path)],
+    )
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert [item["file"] for item in data] == [str(fixture_path), str(second_path)]
+    assert [item["metadata"]["num_rows"] for item in data] == [3, 2]
+
+
+def test_json_column_warning_is_on_stderr():
+    """Diagnostics must not invalidate machine-readable stdout."""
+    result = CliRunner().invoke(
+        app,
+        [
+            "inspect",
+            "--format",
+            "json",
+            "--column",
+            "missing",
+            str(fixture_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert json.loads(result.stdout)["columns"] == []
+    assert "No columns match the filter" in result.stderr
+
+
+def test_metadata_only_json_omits_column_details():
+    """The metadata-only option has the same meaning for JSON output."""
+    result = CliRunner().invoke(
+        app,
+        ["inspect", "--format", "json", "--metadata-only", str(fixture_path)],
+    )
+
+    assert result.exit_code == 0
+    assert set(json.loads(result.stdout)) == {"metadata"}
 
 
 def test_multiple_files():
@@ -169,12 +243,12 @@ def test_error_handling_with_multiple_files():
 
     result = runner.invoke(app, ["inspect", str(fixture_path), str(nonexistent_path)])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     # Should process the good file
     assert "ParquetMetaModel" in result.stdout
     # Should show error for bad file
-    assert "Error processing" in result.stdout
-    assert "nonexistent.parquet" in result.stdout
+    assert "Error processing" in result.stderr
+    assert "nonexistent.parquet" in result.stderr
 
 
 def test_sizes_flag():
@@ -203,6 +277,69 @@ def test_sizes_flag_with_json():
         assert "num_values" in column
         assert "total_compressed_size" in column
         assert "total_uncompressed_size" in column
+
+
+def test_details_flag():
+    """Test that --details displays storage metadata tables."""
+    runner = CliRunner()
+    result = runner.invoke(app, ["inspect", "--details", str(fixture_path)])
+
+    assert result.exit_code == 0
+    assert "Parquet Encoding Details" in result.stdout
+    assert "Parquet Index and Statistics Details" in result.stdout
+    assert "RLE_DICTIONARY" in result.stdout
+    assert "BYTE_ARRAY" in result.stdout
+
+
+def test_pyarrow_25_bloom_filter_and_page_indexes(tmp_path: Path):
+    """Test metadata newly exposed by PyArrow 25."""
+    parquet_path = tmp_path / "bloom-filter.parquet"
+    table = pa.table({"id": [1, 2, 3, 4], "value": ["a", "b", "c", "d"]})
+    pq.write_table(
+        table,
+        parquet_path,
+        bloom_filter_options={"id": {"ndv": 4, "fpp": 0.01}},
+        write_page_index=True,
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["inspect", "--format", "json", str(parquet_path)])
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    columns = {column["column_name"]: column for column in data["columns"]}
+
+    assert columns["id"]["has_bloom_filter"] is True
+    assert columns["id"]["bloom_filter_offset"] is not None
+    assert columns["id"]["bloom_filter_length"] > 0
+    assert columns["id"]["has_column_index"] is True
+    assert columns["id"]["has_offset_index"] is True
+    assert columns["value"]["has_bloom_filter"] is False
+
+
+def test_legacy_bloom_filter_without_length_is_detected():
+    """A legacy Bloom offset is sufficient when the newer length is absent."""
+    column_info = ParquetColumnInfo(
+        columns=[
+            ColumnInfo(
+                row_group=0,
+                column_name="id",
+                column_index=0,
+                compression_type="SNAPPY",
+            )
+        ]
+    )
+    column_chunk = SimpleNamespace(bloom_filter_offset=128, bloom_filter_length=None)
+    metadata = SimpleNamespace(
+        num_row_groups=1,
+        num_columns=1,
+        row_group=lambda _: SimpleNamespace(column=lambda _: column_chunk),
+    )
+
+    print_bloom_filter_info(metadata, column_info)
+
+    assert column_info.columns[0].has_bloom_filter is True
+    assert column_info.columns[0].bloom_filter_length is None
 
 
 def test_format_size_bytes():
@@ -346,8 +483,9 @@ def test_nonexistent_file():
     runner = CliRunner()
     result = runner.invoke(app, ["inspect", "totally_fake_file.parquet"])
 
-    assert result.exit_code == 0  # CLI should handle error gracefully
-    assert "Error" in result.stdout
+    assert result.exit_code == 1
+    assert result.stdout == ""
+    assert "Error processing" in result.stderr
 
 
 def test_default_command():
