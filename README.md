@@ -141,10 +141,12 @@ exit non-zero without corrupting successful JSON output.
 
 ## Agent discovery
 
-iParq publishes an [Agentic Resource Discovery (ARD) catalog](https://iparq.dev/.well-known/ai-catalog.json)
-and a portable [Parquet inspection skill](.agents/skills/iparq-parquet-inspector/SKILL.md)
-for AI clients. The catalog advertises the existing read-only CLI and its JSON
-output; it does not add a network service or change how iParq accesses files.
+iParq publishes [CLI and Agent Skill documentation](https://iparq.dev/docs/), an
+[Agentic Resource Discovery (ARD) catalog](https://iparq.dev/.well-known/ai-catalog.json),
+an [agent-readable documentation index](https://iparq.dev/llms.txt), and a
+portable [Parquet inspection skill](.agents/skills/iparq-parquet-inspector/SKILL.md).
+The catalog advertises the existing read-only CLI and its JSON output; it does
+not add a network service or change how iParq accesses files.
 
 ## Example output
 

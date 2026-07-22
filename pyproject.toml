@@ -43,7 +43,8 @@ checks = [
 iparq = "iparq.source:app"
 
 [project.urls]
-Homepage = "https://github.com/MiguelElGallo/iparq"
+Homepage = "https://iparq.dev/"
+Documentation = "https://iparq.dev/docs/"
 Repository = "https://github.com/MiguelElGallo/iparq"
 Issues = "https://github.com/MiguelElGallo/iparq/issues"
 
