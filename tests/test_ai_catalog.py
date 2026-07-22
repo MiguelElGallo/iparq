@@ -67,9 +67,10 @@ def test_sitemap_uses_canonical_https_urls() -> None:
         for element in sitemap.findall("sitemap:url/sitemap:loc", namespace)
     ]
 
-    assert "https://iparq.dev/" in locations
-    assert "https://iparq.dev/.well-known/ai-catalog.json" in locations
     parsed_locations = [urlsplit(location) for location in locations if location]
     assert len(parsed_locations) == len(locations)
     assert all(location.scheme == "https" for location in parsed_locations)
     assert all(location.hostname == "iparq.dev" for location in parsed_locations)
+    paths = {location.path for location in parsed_locations}
+    assert "/" in paths
+    assert "/.well-known/ai-catalog.json" in paths
