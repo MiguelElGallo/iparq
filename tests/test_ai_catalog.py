@@ -2,6 +2,7 @@ import json
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 REPOSITORY_ROOT = Path(__file__).parents[1]
@@ -68,6 +69,7 @@ def test_sitemap_uses_canonical_https_urls() -> None:
 
     assert "https://iparq.dev/" in locations
     assert "https://iparq.dev/.well-known/ai-catalog.json" in locations
-    assert all(
-        location and location.startswith("https://iparq.dev/") for location in locations
-    )
+    parsed_locations = [urlsplit(location) for location in locations if location]
+    assert len(parsed_locations) == len(locations)
+    assert all(location.scheme == "https" for location in parsed_locations)
+    assert all(location.hostname == "iparq.dev" for location in parsed_locations)
