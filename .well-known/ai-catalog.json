@@ -2,7 +2,7 @@
   "specVersion": "1.0",
   "host": {
     "displayName": "iParq",
-    "identifier": "github.com",
+    "identifier": "iparq.dev",
     "documentationUrl": "https://github.com/MiguelElGallo/iparq"
   },
   "entries": [
