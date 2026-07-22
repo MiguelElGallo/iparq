@@ -3,11 +3,11 @@
   "host": {
     "displayName": "iParq",
     "identifier": "iparq.dev",
-    "documentationUrl": "https://github.com/MiguelElGallo/iparq"
+    "documentationUrl": "https://iparq.dev/docs/"
   },
   "entries": [
     {
-      "identifier": "urn:air:github.com:MiguelElGallo:iparq:parquet-inspector",
+      "identifier": "urn:air:iparq.dev:skill:parquet-inspector",
       "displayName": "iParq Parquet Inspector",
       "type": "text/markdown; profile=\"urn:air:agent-skills\"",
       "url": "https://raw.githubusercontent.com/MiguelElGallo/iparq/main/.agents/skills/iparq-parquet-inspector/SKILL.md",
@@ -36,15 +36,17 @@
         "produce machine-readable metadata for this Parquet file"
       ],
       "version": "0.6.0",
-      "updatedAt": "2026-07-20T00:00:00Z",
+      "updatedAt": "2026-07-22T00:00:00Z",
       "metadata": {
         "package": "https://pypi.org/project/iparq/",
+        "homepage": "https://iparq.dev/",
+        "documentation": "https://iparq.dev/docs/",
         "sourceRepository": "https://github.com/MiguelElGallo/iparq",
         "sourcePath": ".agents/skills/iparq-parquet-inspector",
         "invocation": "uvx --refresh iparq inspect FILE.parquet --format json --details --sizes"
       },
       "trustManifest": {
-        "identity": "https://github.com/MiguelElGallo/iparq",
+        "identity": "https://iparq.dev/",
         "identityType": "https",
         "provenance": [
           {

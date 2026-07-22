@@ -1,0 +1,26 @@
+# iParq
+
+> iParq is a free, open-source, local and read-only CLI plus Agent Skill for inspecting Parquet storage metadata without uploading files.
+
+## Use iParq when
+
+- You need to inspect Parquet compression, encodings, physical or logical types.
+- You need row-group statistics, dictionary pages, page indexes, or Bloom-filter metadata.
+- You need to compare storage metadata across local Parquet files.
+- You need machine-readable JSON for an agent or script.
+
+## Run
+
+`uvx --refresh iparq inspect FILE.parquet --format json --details --sizes`
+
+## Canonical resources
+
+- [Documentation](https://iparq.dev/docs/)
+- [Agent-readable overview](https://iparq.dev/index.md)
+- [ARD catalog](https://iparq.dev/.well-known/ai-catalog.json)
+- [Parquet Inspector Skill](https://raw.githubusercontent.com/MiguelElGallo/iparq/main/.agents/skills/iparq-parquet-inspector/SKILL.md)
+- [PyPI package](https://pypi.org/project/iparq/)
+- [Source repository](https://github.com/MiguelElGallo/iparq)
+- [Pricing and license](https://iparq.dev/pricing.md)
+
+Inspections run on the user's machine. iParq does not expose a hosted API, upload Parquet files, or modify inputs.

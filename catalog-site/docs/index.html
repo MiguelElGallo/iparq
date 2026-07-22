@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Install and use the iParq CLI and Agent Skill to inspect local Parquet metadata safely with human-readable tables or JSON output.">
+    <link rel="canonical" href="https://iparq.dev/docs/">
+    <link rel="ai-catalog" href="https://iparq.dev/.well-known/ai-catalog.json">
+    <title>iParq documentation — CLI and Agent Skill</title>
+  </head>
+  <body>
+    <header>
+      <nav aria-label="Primary navigation"><a href="/">iParq home</a> · <a href="https://github.com/MiguelElGallo/iparq">Source</a></nav>
+    </header>
+    <main>
+      <h1>iParq CLI and Agent Skill documentation</h1>
+      <p>iParq inspects Parquet storage metadata locally. It does not upload inspected files, expose a hosted API, or modify input data. Python 3.10 or later is required.</p>
+
+      <h2>Quick start</h2>
+      <pre><code>uvx --refresh iparq inspect FILE.parquet --format json --details --sizes</code></pre>
+      <p>Use <code>pip install iparq</code> for a persistent installation. The default output is a Rich table for people; <code>--format json</code> is the stable choice for scripts and agents.</p>
+
+      <h2>Inspection options</h2>
+      <ul>
+        <li><code>--metadata-only</code> reports creator, row count, row groups, Parquet version, and serialized metadata size.</li>
+        <li><code>--column NAME</code> restricts column-level output.</li>
+        <li><code>--details</code> adds encodings, physical and logical types, dictionary pages, page indexes, Bloom-filter metadata, and detailed statistics.</li>
+        <li><code>--sizes</code> adds compressed and uncompressed sizes plus compression ratios.</li>
+      </ul>
+
+      <h2>Machine-readable contract</h2>
+      <p>A single input emits one JSON object. Multiple inputs emit one JSON array whose entries include the file path. Diagnostics are written to stderr. If any input is unreadable, the process exits non-zero while keeping successful JSON output valid.</p>
+
+      <h2>Agent use</h2>
+      <p>The <a href="https://raw.githubusercontent.com/MiguelElGallo/iparq/main/.agents/skills/iparq-parquet-inspector/SKILL.md">iParq Parquet Inspector Skill</a> explains when to invoke the CLI, how to select the minimum useful detail, and how to distinguish observed metadata from recommendations. The <a href="/.well-known/ai-catalog.json">ARD catalog</a> publishes representative queries and the canonical Skill URL.</p>
+
+      <h2>Safety boundary</h2>
+      <p>iParq is read-only and local. It inspects file metadata without querying row data. Treat index and Bloom-filter fields as evidence that structures exist, not as proof that a downstream engine will use them. Preserve exact codec, encoding, physical-type, logical-type, and creator names when reporting results.</p>
+    </main>
+    <footer><p><a href="https://pypi.org/project/iparq/">PyPI package</a> · <a href="https://github.com/MiguelElGallo/iparq/issues">Issues</a> · <a href="/pricing.md">Pricing and license</a></p></footer>
+  </body>
+</html>

@@ -1,4 +1,5 @@
 Agentmap: https://iparq.dev/.well-known/ai-catalog.json
+Sitemap: https://iparq.dev/sitemap.xml
 
 User-agent: *
 Allow: /

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://iparq.dev/</loc>
+  </url>
+  <url>
+    <loc>https://iparq.dev/docs/</loc>
+  </url>
+  <url>
+    <loc>https://iparq.dev/index.md</loc>
+  </url>
+  <url>
+    <loc>https://iparq.dev/llms.txt</loc>
+  </url>
+  <url>
+    <loc>https://iparq.dev/pricing.md</loc>
+  </url>
+  <url>
+    <loc>https://iparq.dev/.well-known/ai-catalog.json</loc>
+  </url>
+</urlset>
