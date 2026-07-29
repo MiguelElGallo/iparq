@@ -82,8 +82,19 @@ def test_json_output():
     assert "metadata" in data
     assert "columns" in data
     assert "compression_codecs" in data
+    assert "row_groups" in data
     assert data["metadata"]["num_columns"] == 3
+    assert data["metadata"]["key_value_metadata_keys"] == ["ARROW:schema", "pandas"]
     assert data["compression_codecs"] == ["SNAPPY"]
+    assert data["row_groups"] == [
+        {
+            "row_group": 0,
+            "num_columns": 3,
+            "num_rows": 3,
+            "total_byte_size": 216,
+            "sorting_columns": [],
+        }
+    ]
 
     # Check that min/max statistics are included
     for column in data["columns"]:
@@ -99,6 +110,13 @@ def test_json_output():
         assert "has_min_max" in column
         assert "min_value" in column
         assert "max_value" in column
+        assert "file_offset" in column
+        assert "dictionary_page_offset" in column
+        assert "data_page_offset" in column
+        assert "converted_type" in column
+        assert "max_definition_level" in column
+        assert "max_repetition_level" in column
+        assert "has_geospatial_statistics" in column
         # For our test data, all columns should have min/max stats
         assert column["has_min_max"] is True
         assert column["min_value"] is not None
@@ -286,9 +304,40 @@ def test_details_flag():
 
     assert result.exit_code == 0
     assert "Parquet Encoding Details" in result.stdout
+    assert "Parquet Schema Details" in result.stdout
     assert "Parquet Index and Statistics Details" in result.stdout
+    assert "Parquet Row Group Details" in result.stdout
+    assert "Parquet Column Chunk Locations" in result.stdout
     assert "RLE_DICTIONARY" in result.stdout
     assert "BYTE_ARRAY" in result.stdout
+
+
+def test_row_group_sizes_and_sort_order(tmp_path: Path):
+    """Expose row-group storage size and declared sorting metadata."""
+    parquet_path = tmp_path / "sorted.parquet"
+    table = pa.table({"id": [1, 2, 3, 4], "value": ["a", "b", "c", "d"]})
+    pq.write_table(
+        table,
+        parquet_path,
+        row_group_size=2,
+        sorting_columns=[pq.SortingColumn(0, descending=False, nulls_first=False)],
+    )
+
+    result = CliRunner().invoke(app, ["inspect", "--format", "json", str(parquet_path)])
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert len(data["row_groups"]) == 2
+    assert data["row_groups"][0]["num_rows"] == 2
+    assert data["row_groups"][0]["total_byte_size"] > 0
+    assert data["row_groups"][0]["sorting_columns"] == [
+        {
+            "column_index": 0,
+            "column_name": "id",
+            "descending": False,
+            "nulls_first": False,
+        }
+    ]
 
 
 def test_pyarrow_25_bloom_filter_and_page_indexes(tmp_path: Path):
