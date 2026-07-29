@@ -4,7 +4,6 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.parse import urlsplit
 
-
 REPOSITORY_ROOT = Path(__file__).parents[1]
 CATALOG_PATH = REPOSITORY_ROOT / ".well-known" / "ai-catalog.json"
 SITE_PATH = REPOSITORY_ROOT / "catalog-site"

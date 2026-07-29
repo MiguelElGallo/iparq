@@ -1,6 +1,6 @@
 [project]
 name = "iparq"
-version = "0.6.0"
+version = "0.7.0"
 description = "Inspect Parquet metadata, encodings, compression, indexes, and Bloom filters"
 readme = "README.md"
 authors = [
@@ -35,8 +35,8 @@ test = [
 ]
 checks = [
     "mypy>=2.3.0",
-    "ruff>=0.15.22",
-    "ty>=0.0.61",
+    "ruff>=0.16.0",
+    "ty>=0.0.64",
 ]
 
 [project.scripts]
@@ -57,6 +57,10 @@ addopts = ["-ra", "-q"]
 testpaths = [
     "tests",
 ]
+
+[tool.ruff.lint]
+# Typer declares CLI metadata through function-call defaults by design.
+ignore = ["B008"]
 
 [[tool.mypy.overrides]]
 module = ["pyarrow.*"]

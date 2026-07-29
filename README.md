@@ -17,6 +17,9 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
 - **Encodings and types**: Shows physical and logical types plus encodings such as `RLE_DICTIONARY`, `DELTA_BINARY_PACKED`, and `BYTE_STREAM_SPLIT`.
 - **Indexes and dictionary pages**: Reports dictionary pages, column indexes, and offset indexes.
 - **Statistics**: Displays min/max values and available null and distinct counts.
+- **Row groups and sort order**: Shows row-group sizes, row counts, and declared sorting columns.
+- **Page locations**: Reports column-chunk, dictionary-page, data-page, and Bloom-filter offsets.
+- **Schema details**: Includes legacy converted types, decimal precision/scale, nesting levels, and GeoParquet statistics availability.
 - **Compression**: Shows codecs with optional column sizes and compression ratios.
 - **Machine-readable output**: Emits JSON for scripts and agent workflows.
 
@@ -92,7 +95,7 @@ Options include:
 - `--metadata-only`, `-m`: Show only file metadata without column details
 - `--column`, `-c`: Filter results to show only a specific column
 - `--sizes`, `-s`: Show column sizes and compression ratios
-- `--details`, `-d`: Show encodings, types, indexes, Bloom-filter size, and detailed statistics
+- `--details`, `-d`: Show row groups, sort order, encodings, types, indexes, page locations, Bloom-filter size, and detailed statistics
 
 ### Single File Examples:
 
@@ -157,7 +160,8 @@ ParquetMetaModel(
     num_rows=3,
     num_row_groups=1,
     format_version='2.6',
-    serialized_size=2223
+    serialized_size=2223,
+    key_value_metadata_keys=['ARROW:schema', 'pandas']
 )
                                      Parquet Column Information                                      
 ┏━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━┓

@@ -1,6 +1,6 @@
 ---
 name: iparq-parquet-inspector
-description: Inspect Parquet file metadata with the iParq CLI, including compression, encodings, physical and logical types, row groups, statistics, dictionary pages, page indexes, Bloom filters, and storage sizes. Use when an agent needs to explain how one or more .parquet files were written, compare their storage-level features, diagnose missing Parquet optimizations, or obtain machine-readable Parquet metadata without reading the row data.
+description: Inspect Parquet file metadata with the iParq CLI, including compression, encodings, physical and logical types, row groups, sort order, statistics, dictionary pages, page indexes, page locations, Bloom filters, and storage sizes. Use when an agent needs to explain how one or more .parquet files were written, compare their storage-level features, diagnose missing Parquet optimizations, or obtain machine-readable Parquet metadata without reading the row data.
 ---
 
 # iParq Parquet Inspector
@@ -27,7 +27,7 @@ Pass multiple paths or shell-expanded glob patterns to compare files. iParq emit
 
 - Use `--metadata-only` for creator, row count, row groups, Parquet version, and serialized metadata size.
 - Use `--column NAME` to restrict column-level output.
-- Use `--details` for encodings, physical and logical types, dictionary pages, page indexes, Bloom-filter metadata, and detailed statistics.
+- Use `--details` for row-group sizes and sort order, encodings, physical and logical types, dictionary pages, page indexes and locations, Bloom-filter metadata, and detailed statistics.
 - Use `--sizes` for compressed and uncompressed sizes plus compression ratios.
 - Keep `--format json` for agent workflows. Use the default Rich output only when a human explicitly wants a table.
 
