@@ -38,7 +38,7 @@ def test_cataloged_skill_exists_and_has_matching_identity() -> None:
     assert entry["type"] == 'text/markdown; profile="urn:air:agent-skills"'
     assert skill.startswith("---\nname: iparq-parquet-inspector\n")
     assert "Use when" in skill.split("---", 2)[1]
-    assert entry["version"] == "0.6.0"
+    assert entry["version"] == "0.7.0"
     assert entry["trustManifest"]["identity"] == "https://iparq.dev/"
 
 
