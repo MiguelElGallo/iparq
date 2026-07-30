@@ -33,12 +33,19 @@ def test_cataloged_skill_exists_and_has_matching_identity() -> None:
     entry = catalog["entries"][0]
     skill_path = REPOSITORY_ROOT / entry["metadata"]["sourcePath"] / "SKILL.md"
     skill = skill_path.read_text()
+    project = (REPOSITORY_ROOT / "pyproject.toml").read_text()
+    version_match = re.search(r'^version = "([^"]+)"$', project, re.MULTILINE)
 
     assert skill_path.is_file()
+    assert version_match is not None
     assert entry["type"] == 'text/markdown; profile="urn:air:agent-skills"'
     assert skill.startswith("---\nname: iparq-parquet-inspector\n")
     assert "Use when" in skill.split("---", 2)[1]
-    assert entry["version"] == "0.7.0"
+    assert entry["version"] == version_match.group(1)
+    assert (
+        f'"softwareVersion": "{version_match.group(1)}"'
+        in (SITE_PATH / "index.html").read_text()
+    )
     assert entry["trustManifest"]["identity"] == "https://iparq.dev/"
 
 

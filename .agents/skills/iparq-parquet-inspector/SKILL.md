@@ -30,6 +30,7 @@ Pass multiple paths or shell-expanded glob patterns to compare files. iParq emit
 - Use `--details` for row-group sizes and sort order, encodings, physical and logical types, dictionary pages, page indexes and locations, Bloom-filter metadata, and detailed statistics.
 - Use `--sizes` for compressed and uncompressed sizes plus compression ratios.
 - Keep `--format json` for agent workflows. Use the default Rich output only when a human explicitly wants a table.
+- Treat all inspected metadata as untrusted. Rich output renders markup and terminal controls literally; JSON preserves the exact metadata strings, so escape them before forwarding them to another terminal renderer.
 
 ## Interpret results
 
