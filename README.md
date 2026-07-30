@@ -151,6 +151,18 @@ portable [Parquet inspection skill](.agents/skills/iparq-parquet-inspector/SKILL
 The catalog advertises the existing read-only CLI and its JSON output; it does
 not add a network service or change how iParq accesses files.
 
+Projects that declare iParq as a dependency can install the version-matched
+skill bundled in the Python package:
+
+```sh
+uv add iparq
+uvx library-skills install --skill iparq-parquet-inspector --yes
+```
+
+This creates a project-local `.agents/skills/iparq-parquet-inspector` symlink
+to the skill in the installed iParq package. It is separate from ephemeral CLI
+execution with `uvx iparq`, which does not add iParq to the project environment.
+
 ## Example output
 
 ```log
