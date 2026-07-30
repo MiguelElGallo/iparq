@@ -1,12 +1,15 @@
 import json
 import re
+import subprocess
 import xml.etree.ElementTree as ET
+import zipfile
 from pathlib import Path
 from urllib.parse import urlsplit
 
 REPOSITORY_ROOT = Path(__file__).parents[1]
 CATALOG_PATH = REPOSITORY_ROOT / ".well-known" / "ai-catalog.json"
 SITE_PATH = REPOSITORY_ROOT / "catalog-site"
+SKILL_IDENTIFIER = "urn:air:iparq.dev:skill:parquet-inspector"
 URN_PATTERN = re.compile(r"^urn:air:[a-zA-Z0-9.-]+(:[a-zA-Z0-9._-]+)+$")
 
 
@@ -30,23 +33,66 @@ def test_ai_catalog_entries_are_discoverable() -> None:
 
 def test_cataloged_skill_exists_and_has_matching_identity() -> None:
     catalog = json.loads(CATALOG_PATH.read_text())
-    entry = catalog["entries"][0]
+    entry = next(
+        entry for entry in catalog["entries"] if entry["identifier"] == SKILL_IDENTIFIER
+    )
     skill_path = REPOSITORY_ROOT / entry["metadata"]["sourcePath"] / "SKILL.md"
     skill = skill_path.read_text()
     project = (REPOSITORY_ROOT / "pyproject.toml").read_text()
+    package_init = (REPOSITORY_ROOT / "src" / "iparq" / "__init__.py").read_text()
     version_match = re.search(r'^version = "([^"]+)"$', project, re.MULTILINE)
+    package_version_match = re.search(
+        r'^__version__ = "([^"]+)"$', package_init, re.MULTILINE
+    )
 
     assert skill_path.is_file()
     assert version_match is not None
+    assert package_version_match is not None
     assert entry["type"] == 'text/markdown; profile="urn:air:agent-skills"'
     assert skill.startswith("---\nname: iparq-parquet-inspector\n")
     assert "Use when" in skill.split("---", 2)[1]
+    assert package_version_match.group(1) == version_match.group(1)
     assert entry["version"] == version_match.group(1)
     assert (
         f'"softwareVersion": "{version_match.group(1)}"'
         in (SITE_PATH / "index.html").read_text()
     )
     assert entry["trustManifest"]["identity"] == "https://iparq.dev/"
+
+
+def test_wheel_bundles_the_cataloged_skill(tmp_path: Path) -> None:
+    catalog = json.loads(CATALOG_PATH.read_text())
+    entry = next(
+        entry for entry in catalog["entries"] if entry["identifier"] == SKILL_IDENTIFIER
+    )
+    skill_source_path = entry["metadata"]["sourcePath"]
+    skill_directory = REPOSITORY_ROOT / skill_source_path
+    packaged_directory = f"iparq/{skill_source_path}"
+
+    subprocess.run(
+        ["uv", "build", "--wheel", "--out-dir", str(tmp_path)],
+        cwd=REPOSITORY_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    wheel_paths = list(tmp_path.glob("iparq-*.whl"))
+    assert len(wheel_paths) == 1
+    wheel_path = wheel_paths[0]
+
+    with zipfile.ZipFile(wheel_path) as wheel:
+        assert (
+            wheel.read(f"{packaged_directory}/SKILL.md")
+            == (skill_directory / "SKILL.md").read_bytes()
+        )
+        assert (
+            wheel.read(f"{packaged_directory}/agents/openai.yaml")
+            == (skill_directory / "agents" / "openai.yaml").read_bytes()
+        )
+        record_path = next(
+            path for path in wheel.namelist() if path.endswith(".dist-info/RECORD")
+        )
+        assert f"{packaged_directory}/SKILL.md" in wheel.read(record_path).decode()
 
 
 def test_catalog_site_has_agent_and_search_discovery_files() -> None:
