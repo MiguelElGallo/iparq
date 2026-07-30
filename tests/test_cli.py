@@ -137,6 +137,38 @@ def test_json_preserves_rich_markup_like_values(tmp_path: Path):
     assert data["columns"][0]["max_value"] == value
 
 
+def test_rich_output_neutralizes_untrusted_terminal_sequences(tmp_path: Path):
+    """Parquet metadata must render literally without terminal control effects."""
+    parquet_path = tmp_path / "terminal-controls.parquet"
+    column_name = (
+        "[bold]COLUMN[/bold]"
+        "\x1b[31mANSI\x1b[0m"
+        "\x1b]8;;https://example.invalid\x07LINK\x1b]8;;\x07"
+        "\x9b31mC1_CSI\x9b0m"
+    )
+    value = "[cyan]VALUE[/cyan]"
+    pq.write_table(pa.table({column_name: [value]}), parquet_path)
+
+    result = CliRunner().invoke(
+        app,
+        ["inspect", "--details", str(parquet_path)],
+        env={"COLUMNS": "240"},
+    )
+
+    assert result.exit_code == 0
+    assert "[bold]COLUMN[/bold]" in result.stdout
+    assert "[cyan]VALUE[/cyan]" in result.stdout
+    assert "\x1b[31m" not in result.stdout
+    assert "\x1b]8;;https://example.invalid" not in result.stdout
+    assert "\x9b31m" not in result.stdout
+
+    json_result = CliRunner().invoke(
+        app, ["inspect", "--format", "json", str(parquet_path)]
+    )
+    assert json_result.exit_code == 0
+    assert json.loads(json_result.stdout)["columns"][0]["column_name"] == column_name
+
+
 def test_multiple_file_json_is_one_document(tmp_path: Path):
     """Multiple JSON results are emitted as a single array with filenames."""
     second_path = tmp_path / "second.parquet"

@@ -1,5 +1,6 @@
 import glob
 import json
+import unicodedata
 from enum import Enum
 
 import pyarrow.parquet as pq
@@ -7,6 +8,7 @@ import typer
 from pydantic import BaseModel, Field
 from rich.console import Console
 from rich.table import Table
+from rich.text import Text
 
 app = typer.Typer(
     help="Inspect Parquet files for metadata, compression, and bloom filters"
@@ -156,6 +158,20 @@ class ParquetColumnInfo(BaseModel):
     """
 
     columns: list[ColumnInfo] = Field(default_factory=list)
+
+
+def terminal_safe_text(value: object, *, style: str = "") -> Text:
+    """Render untrusted data literally and make terminal controls visible."""
+    escaped = "".join(
+        ascii(character)[1:-1] if unicodedata.category(character) == "Cc" else character
+        for character in str(value)
+    )
+    return Text(escaped, style=style)
+
+
+def add_terminal_safe_row(table: Table, *values: object) -> None:
+    """Add a table row after converting every value at the terminal boundary."""
+    table.add_row(*(terminal_safe_text(value) for value in values))
 
 
 def build_meta_model(parquet_metadata) -> ParquetMetaModel:
@@ -448,7 +464,7 @@ def print_column_info_table(
                 ]
             )
 
-        table.add_row(*row_data)
+        add_terminal_safe_row(table, *row_data)
 
     # Print the table
     console.print(table)
@@ -508,66 +524,59 @@ def print_storage_details_table(
             f"NULLS {'FIRST' if column.nulls_first else 'LAST'}"
             for column in row_group.sorting_columns
         )
-        row_group_table.add_row(
-            str(row_group.row_group),
-            str(row_group.num_rows),
-            str(row_group.num_columns),
+        add_terminal_safe_row(
+            row_group_table,
+            row_group.row_group,
+            row_group.num_rows,
+            row_group.num_columns,
             format_size(row_group.total_byte_size),
             sort_order or "—",
         )
 
     for col in column_info.columns:
-        encoding_table.add_row(
-            str(col.row_group),
+        add_terminal_safe_row(
+            encoding_table,
+            col.row_group,
             col.column_name,
             col.physical_type,
             col.logical_type or "—",
             ", ".join(col.encodings) or "—",
         )
-        schema_table.add_row(
-            str(col.row_group),
+        add_terminal_safe_row(
+            schema_table,
+            col.row_group,
             col.column_name,
             col.converted_type or "—",
-            str(col.type_length) if col.type_length is not None else "—",
-            str(col.precision) if col.precision is not None else "—",
-            str(col.scale) if col.scale is not None else "—",
-            (
-                str(col.max_definition_level)
-                if col.max_definition_level is not None
-                else "—"
-            ),
-            (
-                str(col.max_repetition_level)
-                if col.max_repetition_level is not None
-                else "—"
-            ),
+            col.type_length if col.type_length is not None else "—",
+            col.precision if col.precision is not None else "—",
+            col.scale if col.scale is not None else "—",
+            (col.max_definition_level if col.max_definition_level is not None else "—"),
+            (col.max_repetition_level if col.max_repetition_level is not None else "—"),
         )
-        index_table.add_row(
-            str(col.row_group),
+        add_terminal_safe_row(
+            index_table,
+            col.row_group,
             col.column_name,
             "✅" if col.has_dictionary_page else "—",
             "✅" if col.has_column_index else "—",
             "✅" if col.has_offset_index else "—",
             format_size(col.bloom_filter_length),
-            str(col.null_count) if col.null_count is not None else "N/A",
-            str(col.distinct_count) if col.distinct_count is not None else "N/A",
+            col.null_count if col.null_count is not None else "N/A",
+            col.distinct_count if col.distinct_count is not None else "N/A",
             "✅" if col.has_geospatial_statistics else "—",
         )
-        page_table.add_row(
-            str(col.row_group),
+        add_terminal_safe_row(
+            page_table,
+            col.row_group,
             col.column_name,
-            str(col.file_offset) if col.file_offset is not None else "N/A",
+            col.file_offset if col.file_offset is not None else "N/A",
             (
-                str(col.dictionary_page_offset)
+                col.dictionary_page_offset
                 if col.dictionary_page_offset is not None
                 else "N/A"
             ),
-            str(col.data_page_offset) if col.data_page_offset is not None else "N/A",
-            (
-                str(col.bloom_filter_offset)
-                if col.bloom_filter_offset is not None
-                else "N/A"
-            ),
+            col.data_page_offset if col.data_page_offset is not None else "N/A",
+            (col.bloom_filter_offset if col.bloom_filter_offset is not None else "N/A"),
         )
 
     console.print(row_group_table)
@@ -660,7 +669,9 @@ def inspect_single_file(
         if not column_info.columns:
             destination = error_console if format == OutputFormat.JSON else console
             destination.print(
-                f"No columns match the filter: {column_filter}", style="yellow"
+                terminal_safe_text(
+                    f"No columns match the filter: {column_filter}", style="yellow"
+                )
             )
 
     # Output based on format selection
@@ -745,7 +756,7 @@ def inspect(
         if format == OutputFormat.RICH and len(unique_files) > 1:
             if i > 0:
                 console.print()  # Add blank line between files
-            console.print(f"[bold blue]File: {filename}[/bold blue]")
+            console.print(terminal_safe_text(f"File: {filename}", style="bold blue"))
             console.print("─" * (len(filename) + 6))
 
         try:
@@ -762,7 +773,9 @@ def inspect(
                     result = {"file": filename, **result}
                 json_results.append(result)
         except Exception as e:  # noqa: BLE001 - isolate failures across input files
-            error_console.print(f"Error processing {filename}: {e}", style="red")
+            error_console.print(
+                terminal_safe_text(f"Error processing {filename}: {e}", style="red")
+            )
             had_errors = True
             continue
 
