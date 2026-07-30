@@ -692,7 +692,7 @@ def inspect_single_file(
             print_column_info_table(column_info, show_sizes=show_sizes)
             if show_details:
                 print_storage_details_table(column_info, row_groups)
-            console.print(f"Compression codecs: {compression}")
+            console.print(terminal_safe_text(f"Compression codecs: {compression}"))
     return None
 
 
