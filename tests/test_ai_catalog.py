@@ -9,6 +9,7 @@ from urllib.parse import urlsplit
 REPOSITORY_ROOT = Path(__file__).parents[1]
 CATALOG_PATH = REPOSITORY_ROOT / ".well-known" / "ai-catalog.json"
 SITE_PATH = REPOSITORY_ROOT / "catalog-site"
+SKILL_IDENTIFIER = "urn:air:iparq.dev:skill:parquet-inspector"
 URN_PATTERN = re.compile(r"^urn:air:[a-zA-Z0-9.-]+(:[a-zA-Z0-9._-]+)+$")
 
 
@@ -32,7 +33,9 @@ def test_ai_catalog_entries_are_discoverable() -> None:
 
 def test_cataloged_skill_exists_and_has_matching_identity() -> None:
     catalog = json.loads(CATALOG_PATH.read_text())
-    entry = catalog["entries"][0]
+    entry = next(
+        entry for entry in catalog["entries"] if entry["identifier"] == SKILL_IDENTIFIER
+    )
     skill_path = REPOSITORY_ROOT / entry["metadata"]["sourcePath"] / "SKILL.md"
     skill = skill_path.read_text()
     project = (REPOSITORY_ROOT / "pyproject.toml").read_text()
@@ -59,8 +62,12 @@ def test_cataloged_skill_exists_and_has_matching_identity() -> None:
 
 def test_wheel_bundles_the_cataloged_skill(tmp_path: Path) -> None:
     catalog = json.loads(CATALOG_PATH.read_text())
-    skill_directory = REPOSITORY_ROOT / catalog["entries"][0]["metadata"]["sourcePath"]
-    packaged_directory = "iparq/.agents/skills/iparq-parquet-inspector"
+    entry = next(
+        entry for entry in catalog["entries"] if entry["identifier"] == SKILL_IDENTIFIER
+    )
+    skill_source_path = entry["metadata"]["sourcePath"]
+    skill_directory = REPOSITORY_ROOT / skill_source_path
+    packaged_directory = f"iparq/{skill_source_path}"
 
     subprocess.run(
         ["uv", "build", "--wheel", "--out-dir", str(tmp_path)],
@@ -69,7 +76,9 @@ def test_wheel_bundles_the_cataloged_skill(tmp_path: Path) -> None:
         capture_output=True,
         text=True,
     )
-    (wheel_path,) = tmp_path.glob("iparq-*.whl")
+    wheel_paths = list(tmp_path.glob("iparq-*.whl"))
+    assert len(wheel_paths) == 1
+    wheel_path = wheel_paths[0]
 
     with zipfile.ZipFile(wheel_path) as wheel:
         assert (
