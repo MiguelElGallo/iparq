@@ -1,0 +1,33 @@
+{
+  "name": "iparq",
+  "version": "0.7.3",
+  "description": "Inspect local Parquet metadata, compression, encodings, indexes, statistics, and Bloom filters with iParq.",
+  "author": {
+    "name": "MiguelElGallo",
+    "email": "miguel.zurcher@gmail.com",
+    "url": "https://github.com/MiguelElGallo"
+  },
+  "homepage": "https://iparq.dev/",
+  "repository": "https://github.com/MiguelElGallo/iparq",
+  "license": "MIT",
+  "keywords": [
+    "parquet",
+    "metadata",
+    "compression",
+    "data-engineering"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "iParq",
+    "shortDescription": "Inspect Parquet metadata locally",
+    "longDescription": "Use iParq's read-only CLI to inspect local Parquet storage metadata and return structured results without uploading files.",
+    "developerName": "MiguelElGallo",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "websiteURL": "https://iparq.dev/",
+    "defaultPrompt": "Inspect the Parquet files in this task and explain their storage-level metadata."
+  }
+}

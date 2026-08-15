@@ -151,6 +151,29 @@ portable [Parquet inspection skill](.agents/skills/iparq-parquet-inspector/SKILL
 The catalog advertises the existing read-only CLI and its JSON output; it does
 not add a network service or change how iParq accesses files.
 
+### Install as an Agent Plugin
+
+iParq follows the [Agent Plugins specification](https://agent-plugins.org/) and
+packages its existing skill without adding an MCP server. The skill teaches an
+agent to run the local CLI through `uvx`, so inspected files stay on the machine.
+
+For Codex, add the repository marketplace and install iParq:
+
+```sh
+codex plugin marketplace add MiguelElGallo/iparq
+codex plugin add iparq@iparq
+```
+
+For GitHub Copilot CLI, add the repository marketplace and install iParq:
+
+```sh
+copilot plugin marketplace add MiguelElGallo/iparq
+copilot plugin install iparq@iparq
+```
+
+Other Agent Plugins clients can load the portable package from
+`plugins/iparq`.
+
 Projects that declare iParq as a dependency can install the version-matched
 skill bundled in the Python package:
 

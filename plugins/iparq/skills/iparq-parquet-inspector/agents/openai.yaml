@@ -1,0 +1,4 @@
+interface:
+  display_name: "iParq Parquet Inspector"
+  short_description: "Inspect Parquet internals with structured output"
+  default_prompt: "Use $iparq-parquet-inspector to inspect these Parquet files and explain their storage-level metadata."

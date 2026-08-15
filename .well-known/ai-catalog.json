@@ -35,8 +35,8 @@
         "compare storage metadata across these Parquet files",
         "produce machine-readable metadata for this Parquet file"
       ],
-      "version": "0.7.2",
-      "updatedAt": "2026-07-30T00:00:00Z",
+      "version": "0.7.3",
+      "updatedAt": "2026-08-15T00:00:00Z",
       "metadata": {
         "package": "https://pypi.org/project/iparq/",
         "homepage": "https://iparq.dev/",

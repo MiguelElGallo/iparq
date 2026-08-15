@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "iparq",
+  "version": "0.7.3",
+  "description": "Inspect local Parquet metadata, compression, encodings, indexes, statistics, and Bloom filters with iParq.",
+  "author": {
+    "name": "MiguelElGallo",
+    "email": "miguel.zurcher@gmail.com",
+    "url": "https://github.com/MiguelElGallo"
+  },
+  "homepage": "https://iparq.dev/",
+  "repository": "https://github.com/MiguelElGallo/iparq",
+  "license": "MIT",
+  "keywords": [
+    "parquet",
+    "metadata",
+    "compression",
+    "data-engineering"
+  ]
+}

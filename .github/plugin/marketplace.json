@@ -1,0 +1,19 @@
+{
+  "name": "iparq",
+  "owner": {
+    "name": "MiguelElGallo",
+    "email": "miguel.zurcher@gmail.com"
+  },
+  "metadata": {
+    "description": "Install iParq's read-only Parquet inspection skill.",
+    "version": "0.7.3"
+  },
+  "plugins": [
+    {
+      "name": "iparq",
+      "description": "Inspect local Parquet metadata, compression, encodings, indexes, statistics, and Bloom filters with iParq.",
+      "version": "0.7.3",
+      "source": "./plugins/iparq"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 [project]
 name = "iparq"
-version = "0.7.2"
+version = "0.7.3"
 description = "Inspect Parquet metadata, encodings, compression, indexes, and Bloom filters"
 readme = "README.md"
 authors = [
@@ -30,6 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
+    "jsonschema>=4.26.0",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
 ]
@@ -71,6 +72,7 @@ ignore_missing_imports = true
 
 [dependency-groups]
 dev = [
+    "jsonschema>=4.26.0",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
 ]
