@@ -1,0 +1,20 @@
+{
+  "name": "iparq",
+  "interface": {
+    "displayName": "iParq Agent Plugins"
+  },
+  "plugins": [
+    {
+      "name": "iparq",
+      "source": {
+        "source": "local",
+        "path": "./plugins/iparq"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
