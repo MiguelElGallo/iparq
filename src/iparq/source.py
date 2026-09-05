@@ -88,11 +88,15 @@ class ColumnInfo(BaseModel):
         has_dictionary_page (bool): Whether a dictionary page is present.
         has_column_index (bool): Whether a page-level column index is present.
         has_offset_index (bool): Whether a page-level offset index is present.
+        has_index_page (Optional[bool]): Whether a legacy index page is present, or unknown.
+        index_page_offset (Optional[int]): Offset of the legacy index page.
         has_min_max (bool): Whether min/max statistics are available.
         min_value (Optional[str]): The minimum value in the column (as string for display).
         max_value (Optional[str]): The maximum value in the column (as string for display).
         null_count (Optional[int]): Number of null values reported in statistics.
         distinct_count (Optional[int]): Distinct values reported in statistics.
+        statistics_num_values (Optional[int]): Values represented by the statistics.
+        geo_statistics (Optional[dict]): GeoParquet statistics when present.
         is_min_exact (Optional[bool]): Whether the min value is exact (PyArrow 22+).
         is_max_exact (Optional[bool]): Whether the max value is exact (PyArrow 22+).
         is_encrypted (Optional[bool]): Whether the column is encrypted.
@@ -125,11 +129,15 @@ class ColumnInfo(BaseModel):
     has_dictionary_page: bool = False
     has_column_index: bool = False
     has_offset_index: bool = False
+    has_index_page: bool | None = None
+    index_page_offset: int | None = None
     has_min_max: bool = False
     min_value: str | None = None
     max_value: str | None = None
     null_count: int | None = None
     distinct_count: int | None = None
+    statistics_num_values: int | None = None
+    geo_statistics: dict[str, object] | None = None
     is_min_exact: bool | None = None
     is_max_exact: bool | None = None
     is_encrypted: bool | None = None
@@ -222,6 +230,14 @@ def optional_positive(value: int) -> int | None:
     return value if value > 0 else None
 
 
+def optional_column_metadata(column_chunk, attribute: str):
+    """Read optional column metadata across PyArrow versions and file formats."""
+    try:
+        return getattr(column_chunk, attribute)
+    except (AttributeError, NotImplementedError):
+        return None
+
+
 def read_parquet_metadata(filename: str):
     """
     Reads the metadata of a Parquet file and extracts the compression codecs used.
@@ -306,6 +322,12 @@ def print_compression_types(parquet_metadata, column_info: ParquetColumnInfo) ->
                     has_dictionary_page=column_chunk.has_dictionary_page,
                     has_column_index=column_chunk.has_column_index,
                     has_offset_index=column_chunk.has_offset_index,
+                    has_index_page=optional_column_metadata(
+                        column_chunk, "has_index_page"
+                    ),
+                    index_page_offset=optional_column_metadata(
+                        column_chunk, "index_page_offset"
+                    ),
                     num_values=column_chunk.num_values,
                     total_compressed_size=column_chunk.total_compressed_size,
                     total_uncompressed_size=column_chunk.total_uncompressed_size,
@@ -322,6 +344,11 @@ def print_compression_types(parquet_metadata, column_info: ParquetColumnInfo) ->
                     max_definition_level=schema_column.max_definition_level,
                     max_repetition_level=schema_column.max_repetition_level,
                     has_geospatial_statistics=column_chunk.is_geo_stats_set,
+                    geo_statistics=(
+                        column_chunk.geo_statistics.to_dict()
+                        if column_chunk.is_geo_stats_set
+                        else None
+                    ),
                 )
             )
 
@@ -377,6 +404,7 @@ def print_min_max_statistics(parquet_metadata, column_info: ParquetColumnInfo) -
                         col.distinct_count = (
                             stats.distinct_count if stats.has_distinct_count else None
                         )
+                        col.statistics_num_values = stats.num_values
 
                         if stats.has_min_max:
                             col.min_value = (
@@ -504,10 +532,12 @@ def print_storage_details_table(
     index_table.add_column("Dictionary", justify="center")
     index_table.add_column("Column Index", justify="center")
     index_table.add_column("Offset Index", justify="center")
+    index_table.add_column("Legacy Index", justify="center")
     index_table.add_column("Bloom Size", justify="right")
     index_table.add_column("Nulls", justify="right")
     index_table.add_column("Distinct", justify="right")
-    index_table.add_column("Geo Stats", justify="center")
+    index_table.add_column("Stats Values", justify="right")
+    index_table.add_column("Geo Statistics")
 
     page_table = Table(title="Parquet Column Chunk Locations")
     page_table.add_column("RG", justify="center", style="cyan")
@@ -515,6 +545,7 @@ def print_storage_details_table(
     page_table.add_column("Chunk", justify="right")
     page_table.add_column("Dictionary Page", justify="right")
     page_table.add_column("Data Page", justify="right")
+    page_table.add_column("Legacy Index", justify="right")
     page_table.add_column("Bloom Filter", justify="right")
 
     for row_group in row_groups:
@@ -560,10 +591,26 @@ def print_storage_details_table(
             "✅" if col.has_dictionary_page else "—",
             "✅" if col.has_column_index else "—",
             "✅" if col.has_offset_index else "—",
+            (
+                "✅"
+                if col.has_index_page is True
+                else "—"
+                if col.has_index_page is False
+                else "N/A"
+            ),
             format_size(col.bloom_filter_length),
             col.null_count if col.null_count is not None else "N/A",
             col.distinct_count if col.distinct_count is not None else "N/A",
-            "✅" if col.has_geospatial_statistics else "—",
+            (
+                col.statistics_num_values
+                if col.statistics_num_values is not None
+                else "N/A"
+            ),
+            (
+                json.dumps(col.geo_statistics, sort_keys=True)
+                if col.geo_statistics is not None
+                else "—"
+            ),
         )
         add_terminal_safe_row(
             page_table,
@@ -576,6 +623,7 @@ def print_storage_details_table(
                 else "N/A"
             ),
             col.data_page_offset if col.data_page_offset is not None else "N/A",
+            col.index_page_offset if col.index_page_offset is not None else "N/A",
             (col.bloom_filter_offset if col.bloom_filter_offset is not None else "N/A"),
         )
 

@@ -105,8 +105,12 @@ def test_json_output():
         assert "bloom_filter_length" in column
         assert "has_column_index" in column
         assert "has_offset_index" in column
+        assert "has_index_page" in column
+        assert "index_page_offset" in column
         assert "null_count" in column
         assert "distinct_count" in column
+        assert "statistics_num_values" in column
+        assert "geo_statistics" in column
         assert "has_min_max" in column
         assert "min_value" in column
         assert "max_value" in column
@@ -121,6 +125,9 @@ def test_json_output():
         assert column["has_min_max"] is True
         assert column["min_value"] is not None
         assert column["max_value"] is not None
+        assert column["statistics_num_values"] is not None
+        assert column["has_index_page"] is None
+        assert column["index_page_offset"] is None
 
 
 def test_json_preserves_rich_markup_like_values(tmp_path: Path):
@@ -332,7 +339,11 @@ def test_sizes_flag_with_json():
 def test_details_flag():
     """Test that --details displays storage metadata tables."""
     runner = CliRunner()
-    result = runner.invoke(app, ["inspect", "--details", str(fixture_path)])
+    result = runner.invoke(
+        app,
+        ["inspect", "--details", str(fixture_path)],
+        env={"COLUMNS": "240"},
+    )
 
     assert result.exit_code == 0
     assert "Parquet Encoding Details" in result.stdout
@@ -340,6 +351,9 @@ def test_details_flag():
     assert "Parquet Index and Statistics Details" in result.stdout
     assert "Parquet Row Group Details" in result.stdout
     assert "Parquet Column Chunk Locations" in result.stdout
+    assert "Stats Values" in result.stdout
+    assert "Geo Statistics" in result.stdout
+    assert "Legacy Index" in result.stdout
     assert "RLE_DICTIONARY" in result.stdout
     assert "BYTE_ARRAY" in result.stdout
 

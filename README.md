@@ -16,10 +16,10 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
 - **Bloom filters**: Detects real Bloom-filter metadata and reports its size. Read more in this [great article](https://duckdb.org/2025/03/07/parquet-bloom-filters-in-duckdb.html).
 - **Encodings and types**: Shows physical and logical types plus encodings such as `RLE_DICTIONARY`, `DELTA_BINARY_PACKED`, and `BYTE_STREAM_SPLIT`.
 - **Indexes and dictionary pages**: Reports dictionary pages, column indexes, and offset indexes.
-- **Statistics**: Displays min/max values and available null and distinct counts.
+- **Statistics**: Displays min/max values, null and distinct counts, and the number of non-null values represented by the statistics.
 - **Row groups and sort order**: Shows row-group sizes, row counts, and declared sorting columns.
-- **Page locations**: Reports column-chunk, dictionary-page, data-page, and Bloom-filter offsets.
-- **Schema details**: Includes legacy converted types, decimal precision/scale, nesting levels, and GeoParquet statistics availability.
+- **Page locations**: Reports column-chunk, dictionary-page, data-page, legacy index-page, and Bloom-filter offsets when available.
+- **Schema details**: Includes legacy converted types, decimal precision/scale, nesting levels, and GeoParquet statistics.
 - **Compression**: Shows codecs with optional column sizes and compression ratios.
 - **Machine-readable output**: Emits JSON for scripts and agent workflows.
 
