@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Install iParq's read-only Parquet inspection skill.",
-    "version": "0.7.3"
+    "version": "0.8.0"
   },
   "plugins": [
     {
       "name": "iparq",
       "description": "Inspect local Parquet metadata, compression, encodings, indexes, statistics, and Bloom filters with iParq.",
-      "version": "0.7.3",
+      "version": "0.8.0",
       "source": "./plugins/iparq"
     }
   ]

@@ -1,6 +1,6 @@
 {
   "name": "iparq",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "description": "Inspect local Parquet metadata, compression, encodings, indexes, statistics, and Bloom filters with iParq.",
   "author": {
     "name": "MiguelElGallo",
