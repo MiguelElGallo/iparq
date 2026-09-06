@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "iparq",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Inspect local Parquet metadata, compression, encodings, indexes, statistics, and Bloom filters with iParq.",
   "author": {
     "name": "MiguelElGallo",

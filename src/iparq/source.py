@@ -97,9 +97,9 @@ class ColumnInfo(BaseModel):
         distinct_count (Optional[int]): Distinct values reported in statistics.
         statistics_num_values (Optional[int]): Values represented by the statistics.
         geo_statistics (Optional[dict]): GeoParquet statistics when present.
-        is_min_exact (Optional[bool]): Whether the min value is exact (PyArrow 22+).
-        is_max_exact (Optional[bool]): Whether the max value is exact (PyArrow 22+).
-        is_encrypted (Optional[bool]): Whether the column is encrypted.
+        is_min_exact (Optional[bool]): Reserved; always None because PyArrow does not expose it.
+        is_max_exact (Optional[bool]): Reserved; always None because PyArrow does not expose it.
+        is_encrypted (Optional[bool]): Reserved; always None because PyArrow does not expose it.
         num_values (Optional[int]): Number of values in this column chunk.
         total_compressed_size (Optional[int]): Total compressed size in bytes.
         total_uncompressed_size (Optional[int]): Total uncompressed size in bytes.
