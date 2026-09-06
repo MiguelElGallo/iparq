@@ -11,7 +11,7 @@
       "displayName": "iParq Parquet Inspector",
       "type": "text/markdown; profile=\"urn:air:agent-skills\"",
       "url": "https://raw.githubusercontent.com/MiguelElGallo/iparq/main/.agents/skills/iparq-parquet-inspector/SKILL.md",
-      "description": "Inspect Parquet metadata, compression, encodings, physical and logical types, row groups, statistics, indexes, dictionary pages, Bloom filters, and storage sizes through a read-only CLI with machine-readable JSON output.",
+      "description": "Inspect Parquet metadata, compression, encodings, physical and logical types, row groups, statistics, geospatial statistics, indexes, dictionary pages, Bloom filters, and storage sizes through a read-only CLI with machine-readable JSON output.",
       "tags": [
         "parquet",
         "metadata",
@@ -26,6 +26,7 @@
         "CompareParquetFiles",
         "DetectParquetBloomFilters",
         "AnalyzeParquetCompression",
+        "InspectParquetGeospatialStatistics",
         "EmitParquetMetadataJson"
       ],
       "representativeQueries": [
@@ -35,8 +36,8 @@
         "compare storage metadata across these Parquet files",
         "produce machine-readable metadata for this Parquet file"
       ],
-      "version": "0.8.0",
-      "updatedAt": "2026-09-05T00:00:00Z",
+      "version": "0.8.1",
+      "updatedAt": "2026-09-06T00:00:00Z",
       "metadata": {
         "package": "https://pypi.org/project/iparq/",
         "homepage": "https://iparq.dev/",
