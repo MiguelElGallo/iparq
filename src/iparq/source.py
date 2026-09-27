@@ -378,6 +378,29 @@ def print_bloom_filter_info(parquet_metadata, column_info: ParquetColumnInfo) ->
                     break
 
 
+def _apply_column_statistics(column: ColumnInfo, statistics: pq.Statistics) -> None:
+    """Copy available statistics while retaining explicit null and zero values."""
+    column.has_min_max = statistics.has_min_max
+    column.null_count = statistics.null_count if statistics.has_null_count else None
+    column.distinct_count = (
+        statistics.distinct_count if statistics.has_distinct_count else None
+    )
+    column.statistics_num_values = statistics.num_values
+    if statistics.has_min_max:
+        column.min_value = str(statistics.min) if statistics.min is not None else "null"
+        column.max_value = str(statistics.max) if statistics.max is not None else "null"
+
+
+def _update_column_statistics(
+    column: ColumnInfo, column_chunk: pq.ColumnChunkMetaData
+) -> None:
+    """Update one column using only statistics declared by its chunk."""
+    if not column_chunk.is_stats_set:
+        column.has_min_max = False
+        return
+    _apply_column_statistics(column, column_chunk.statistics)
+
+
 def print_min_max_statistics(parquet_metadata, column_info: ParquetColumnInfo) -> None:
     """
     Updates the column_info model with min/max statistics information.
@@ -392,30 +415,16 @@ def print_min_max_statistics(parquet_metadata, column_info: ParquetColumnInfo) -
         for j in range(parquet_metadata.num_columns):
             column_chunk = row_group.column(j)
 
-            # Find the corresponding column in our model
-            for col in column_info.columns:
-                if col.row_group == i and col.column_index == j:
-                    if column_chunk.is_stats_set:
-                        stats = column_chunk.statistics
-                        col.has_min_max = stats.has_min_max
-                        col.null_count = (
-                            stats.null_count if stats.has_null_count else None
-                        )
-                        col.distinct_count = (
-                            stats.distinct_count if stats.has_distinct_count else None
-                        )
-                        col.statistics_num_values = stats.num_values
-
-                        if stats.has_min_max:
-                            col.min_value = (
-                                str(stats.min) if stats.min is not None else "null"
-                            )
-                            col.max_value = (
-                                str(stats.max) if stats.max is not None else "null"
-                            )
-                    else:
-                        col.has_min_max = False
-                    break
+            column = next(
+                (
+                    col
+                    for col in column_info.columns
+                    if col.row_group == i and col.column_index == j
+                ),
+                None,
+            )
+            if column is not None:
+                _update_column_statistics(column, column_chunk)
 
 
 def format_size(size_bytes: int | None) -> str:
@@ -428,6 +437,38 @@ def format_size(size_bytes: int | None) -> str:
             return f"{size:.1f}{unit}"
         size /= 1024.0
     return f"{size:.1f}TB"
+
+
+def _column_size_values(column: ColumnInfo) -> list[str]:
+    """Format column size cells with the existing zero-value display conventions."""
+    ratio = "N/A"
+    if column.total_compressed_size and column.total_uncompressed_size:
+        ratio = f"{column.total_uncompressed_size / column.total_compressed_size:.1f}x"
+    return [
+        str(column.num_values) if column.num_values else "N/A",
+        format_size(column.total_compressed_size),
+        ratio,
+    ]
+
+
+def _column_row_values(column: ColumnInfo, show_sizes: bool) -> list[str]:
+    """Prepare a column summary row before terminal-safe rendering is applied."""
+    values = [
+        str(column.row_group),
+        column.column_name,
+        str(column.column_index),
+        column.compression_type,
+        "✅" if column.has_bloom_filter else "❌",
+        column.min_value
+        if column.has_min_max and column.min_value is not None
+        else "N/A",
+        column.max_value
+        if column.has_min_max and column.max_value is not None
+        else "N/A",
+    ]
+    if show_sizes:
+        values.extend(_column_size_values(column))
+    return values
 
 
 def print_column_info_table(
@@ -456,97 +497,35 @@ def print_column_info_table(
         table.add_column("Compressed", justify="right", style="blue")
         table.add_column("Ratio", justify="right", style="blue")
 
-    # Add rows to the table
     for col in column_info.columns:
-        # Format min/max values for display
-        min_display = (
-            col.min_value if col.has_min_max and col.min_value is not None else "N/A"
-        )
-        max_display = (
-            col.max_value if col.has_min_max and col.max_value is not None else "N/A"
-        )
-
-        row_data = [
-            str(col.row_group),
-            col.column_name,
-            str(col.column_index),
-            col.compression_type,
-            "✅" if col.has_bloom_filter else "❌",
-            min_display,
-            max_display,
-        ]
-
-        if show_sizes:
-            # Calculate compression ratio
-            ratio = "N/A"
-            if col.total_compressed_size and col.total_uncompressed_size:
-                ratio = (
-                    f"{col.total_uncompressed_size / col.total_compressed_size:.1f}x"
-                )
-
-            row_data.extend(
-                [
-                    str(col.num_values) if col.num_values else "N/A",
-                    format_size(col.total_compressed_size),
-                    ratio,
-                ]
-            )
-
-        add_terminal_safe_row(table, *row_data)
+        add_terminal_safe_row(table, *_column_row_values(col, show_sizes))
 
     # Print the table
     console.print(table)
 
 
-def print_storage_details_table(
-    column_info: ParquetColumnInfo, row_groups: list[RowGroupInfo]
-) -> None:
-    """Print storage-level metadata exposed by PyArrow 25 and later."""
+def _metadata_display_value(value: object, missing: str) -> object:
+    """Substitute missing metadata without replacing present zero or false values."""
+    return missing if value is None else value
+
+
+def _legacy_index_indicator(has_index_page: bool | None) -> str:
+    """Distinguish present, absent, and unknown legacy indexes in terminal output."""
+    if has_index_page is True:
+        return "✅"
+    if has_index_page is False:
+        return "—"
+    return "N/A"
+
+
+def _build_row_group_details_table(row_groups: list[RowGroupInfo]) -> Table:
+    """Build row-group size rows and declared column sort order safely."""
     row_group_table = Table(title="Parquet Row Group Details")
     row_group_table.add_column("RG", justify="center", style="cyan")
     row_group_table.add_column("Rows", justify="right")
     row_group_table.add_column("Columns", justify="right")
     row_group_table.add_column("Uncompressed Size", justify="right", style="blue")
     row_group_table.add_column("Sort Order")
-
-    encoding_table = Table(title="Parquet Encoding Details")
-    encoding_table.add_column("RG", justify="center", style="cyan")
-    encoding_table.add_column("Column", style="green")
-    encoding_table.add_column("Physical", style="magenta")
-    encoding_table.add_column("Logical")
-    encoding_table.add_column("Encodings")
-
-    schema_table = Table(title="Parquet Schema Details")
-    schema_table.add_column("RG", justify="center", style="cyan")
-    schema_table.add_column("Column", style="green")
-    schema_table.add_column("Converted")
-    schema_table.add_column("Length", justify="right")
-    schema_table.add_column("Precision", justify="right")
-    schema_table.add_column("Scale", justify="right")
-    schema_table.add_column("Definition", justify="right")
-    schema_table.add_column("Repetition", justify="right")
-
-    index_table = Table(title="Parquet Index and Statistics Details")
-    index_table.add_column("RG", justify="center", style="cyan")
-    index_table.add_column("Column", style="green")
-    index_table.add_column("Dictionary", justify="center")
-    index_table.add_column("Column Index", justify="center")
-    index_table.add_column("Offset Index", justify="center")
-    index_table.add_column("Legacy Index", justify="center")
-    index_table.add_column("Bloom Size", justify="right")
-    index_table.add_column("Nulls", justify="right")
-    index_table.add_column("Distinct", justify="right")
-    index_table.add_column("Stats Values", justify="right")
-    index_table.add_column("Geo Statistics")
-
-    page_table = Table(title="Parquet Column Chunk Locations")
-    page_table.add_column("RG", justify="center", style="cyan")
-    page_table.add_column("Column", style="green")
-    page_table.add_column("Chunk", justify="right")
-    page_table.add_column("Dictionary Page", justify="right")
-    page_table.add_column("Data Page", justify="right")
-    page_table.add_column("Legacy Index", justify="right")
-    page_table.add_column("Bloom Filter", justify="right")
 
     for row_group in row_groups:
         sort_order = ", ".join(
@@ -563,6 +542,17 @@ def print_storage_details_table(
             format_size(row_group.total_byte_size),
             sort_order or "—",
         )
+    return row_group_table
+
+
+def _build_encoding_details_table(column_info: ParquetColumnInfo) -> Table:
+    """Build physical and logical type rows alongside column encoding choices."""
+    encoding_table = Table(title="Parquet Encoding Details")
+    encoding_table.add_column("RG", justify="center", style="cyan")
+    encoding_table.add_column("Column", style="green")
+    encoding_table.add_column("Physical", style="magenta")
+    encoding_table.add_column("Logical")
+    encoding_table.add_column("Encodings")
 
     for col in column_info.columns:
         add_terminal_safe_row(
@@ -573,17 +563,52 @@ def print_storage_details_table(
             col.logical_type or "—",
             ", ".join(col.encodings) or "—",
         )
+    return encoding_table
+
+
+def _build_schema_details_table(column_info: ParquetColumnInfo) -> Table:
+    """Build schema parameter rows without hiding valid zero-valued field metadata."""
+    schema_table = Table(title="Parquet Schema Details")
+    schema_table.add_column("RG", justify="center", style="cyan")
+    schema_table.add_column("Column", style="green")
+    schema_table.add_column("Converted")
+    schema_table.add_column("Length", justify="right")
+    schema_table.add_column("Precision", justify="right")
+    schema_table.add_column("Scale", justify="right")
+    schema_table.add_column("Definition", justify="right")
+    schema_table.add_column("Repetition", justify="right")
+
+    for col in column_info.columns:
         add_terminal_safe_row(
             schema_table,
             col.row_group,
             col.column_name,
             col.converted_type or "—",
-            col.type_length if col.type_length is not None else "—",
-            col.precision if col.precision is not None else "—",
-            col.scale if col.scale is not None else "—",
-            (col.max_definition_level if col.max_definition_level is not None else "—"),
-            (col.max_repetition_level if col.max_repetition_level is not None else "—"),
+            _metadata_display_value(col.type_length, "—"),
+            _metadata_display_value(col.precision, "—"),
+            _metadata_display_value(col.scale, "—"),
+            _metadata_display_value(col.max_definition_level, "—"),
+            _metadata_display_value(col.max_repetition_level, "—"),
         )
+    return schema_table
+
+
+def _build_index_statistics_details_table(column_info: ParquetColumnInfo) -> Table:
+    """Build index and statistics rows while preserving unknown and zero values."""
+    index_table = Table(title="Parquet Index and Statistics Details")
+    index_table.add_column("RG", justify="center", style="cyan")
+    index_table.add_column("Column", style="green")
+    index_table.add_column("Dictionary", justify="center")
+    index_table.add_column("Column Index", justify="center")
+    index_table.add_column("Offset Index", justify="center")
+    index_table.add_column("Legacy Index", justify="center")
+    index_table.add_column("Bloom Size", justify="right")
+    index_table.add_column("Nulls", justify="right")
+    index_table.add_column("Distinct", justify="right")
+    index_table.add_column("Stats Values", justify="right")
+    index_table.add_column("Geo Statistics")
+
+    for col in column_info.columns:
         add_terminal_safe_row(
             index_table,
             col.row_group,
@@ -591,47 +616,58 @@ def print_storage_details_table(
             "✅" if col.has_dictionary_page else "—",
             "✅" if col.has_column_index else "—",
             "✅" if col.has_offset_index else "—",
-            (
-                "✅"
-                if col.has_index_page is True
-                else "—"
-                if col.has_index_page is False
-                else "N/A"
-            ),
+            _legacy_index_indicator(col.has_index_page),
             format_size(col.bloom_filter_length),
-            col.null_count if col.null_count is not None else "N/A",
-            col.distinct_count if col.distinct_count is not None else "N/A",
-            (
-                col.statistics_num_values
-                if col.statistics_num_values is not None
-                else "N/A"
-            ),
+            _metadata_display_value(col.null_count, "N/A"),
+            _metadata_display_value(col.distinct_count, "N/A"),
+            _metadata_display_value(col.statistics_num_values, "N/A"),
             (
                 json.dumps(col.geo_statistics, sort_keys=True)
                 if col.geo_statistics is not None
                 else "—"
             ),
         )
+    return index_table
+
+
+def _build_column_chunk_locations_table(column_info: ParquetColumnInfo) -> Table:
+    """Build physical chunk and page offset rows without discarding zero offsets."""
+    page_table = Table(title="Parquet Column Chunk Locations")
+    page_table.add_column("RG", justify="center", style="cyan")
+    page_table.add_column("Column", style="green")
+    page_table.add_column("Chunk", justify="right")
+    page_table.add_column("Dictionary Page", justify="right")
+    page_table.add_column("Data Page", justify="right")
+    page_table.add_column("Legacy Index", justify="right")
+    page_table.add_column("Bloom Filter", justify="right")
+
+    for col in column_info.columns:
         add_terminal_safe_row(
             page_table,
             col.row_group,
             col.column_name,
-            col.file_offset if col.file_offset is not None else "N/A",
-            (
-                col.dictionary_page_offset
-                if col.dictionary_page_offset is not None
-                else "N/A"
-            ),
-            col.data_page_offset if col.data_page_offset is not None else "N/A",
-            col.index_page_offset if col.index_page_offset is not None else "N/A",
-            (col.bloom_filter_offset if col.bloom_filter_offset is not None else "N/A"),
+            _metadata_display_value(col.file_offset, "N/A"),
+            _metadata_display_value(col.dictionary_page_offset, "N/A"),
+            _metadata_display_value(col.data_page_offset, "N/A"),
+            _metadata_display_value(col.index_page_offset, "N/A"),
+            _metadata_display_value(col.bloom_filter_offset, "N/A"),
         )
+    return page_table
 
-    console.print(row_group_table)
-    console.print(encoding_table)
-    console.print(schema_table)
-    console.print(index_table)
-    console.print(page_table)
+
+def print_storage_details_table(
+    column_info: ParquetColumnInfo, row_groups: list[RowGroupInfo]
+) -> None:
+    """Print storage-level metadata exposed by PyArrow 25 and later."""
+    tables = [
+        _build_row_group_details_table(row_groups),
+        _build_encoding_details_table(column_info),
+        _build_schema_details_table(column_info),
+        _build_index_statistics_details_table(column_info),
+        _build_column_chunk_locations_table(column_info),
+    ]
+    for table in tables:
+        console.print(table)
 
 
 def build_json_result(
@@ -676,6 +712,45 @@ def output_json(
     print(json.dumps(result, indent=2))
 
 
+def _filter_columns(
+    column_info: ParquetColumnInfo,
+    column_filter: str | None,
+    format: OutputFormat,
+) -> None:
+    """Apply the requested column filter and route unmatched diagnostics safely."""
+    if not column_filter:
+        return
+    column_info.columns = [
+        column for column in column_info.columns if column.column_name == column_filter
+    ]
+    if not column_info.columns:
+        destination = error_console if format == OutputFormat.JSON else console
+        destination.print(
+            terminal_safe_text(
+                f"No columns match the filter: {column_filter}", style="yellow"
+            )
+        )
+
+
+def _print_rich_inspection(
+    meta_model: ParquetMetaModel,
+    column_info: ParquetColumnInfo,
+    compression: set[str],
+    row_groups: list[RowGroupInfo],
+    metadata_only: bool,
+    show_sizes: bool,
+    show_details: bool,
+) -> None:
+    """Display requested Rich details after printing the file metadata model."""
+    console.print(meta_model)
+    if metadata_only:
+        return
+    print_column_info_table(column_info, show_sizes=show_sizes)
+    if show_details:
+        print_storage_details_table(column_info, row_groups)
+    console.print(terminal_safe_text(f"Compression codecs: {compression}"))
+
+
 def inspect_single_file(
     filename: str,
     format: OutputFormat,
@@ -709,18 +784,7 @@ def inspect_single_file(
     print_bloom_filter_info(parquet_metadata, column_info)
     print_min_max_statistics(parquet_metadata, column_info)
 
-    # Filter columns if requested
-    if column_filter:
-        column_info.columns = [
-            col for col in column_info.columns if col.column_name == column_filter
-        ]
-        if not column_info.columns:
-            destination = error_console if format == OutputFormat.JSON else console
-            destination.print(
-                terminal_safe_text(
-                    f"No columns match the filter: {column_filter}", style="yellow"
-                )
-            )
+    _filter_columns(column_info, column_filter, format)
 
     # Output based on format selection
     if format == OutputFormat.JSON:
@@ -731,17 +795,42 @@ def inspect_single_file(
             metadata_only=metadata_only,
             row_groups=row_groups,
         )
-    else:  # Rich format
-        # Print the metadata
-        console.print(meta_model)
-
-        # Print column details if not metadata only
-        if not metadata_only:
-            print_column_info_table(column_info, show_sizes=show_sizes)
-            if show_details:
-                print_storage_details_table(column_info, row_groups)
-            console.print(terminal_safe_text(f"Compression codecs: {compression}"))
+    _print_rich_inspection(
+        meta_model,
+        column_info,
+        compression,
+        row_groups,
+        metadata_only,
+        show_sizes,
+        show_details,
+    )
     return None
+
+
+def _expand_unique_files(filenames: list[str]) -> list[str]:
+    """Expand input patterns and retain each filename in first-seen order."""
+    all_files = []
+    for pattern in filenames:
+        matches = glob.glob(pattern)
+        all_files.extend(matches or [pattern])
+    return list(dict.fromkeys(all_files))
+
+
+def _print_file_heading(filename: str, index: int) -> None:
+    """Separate multiple Rich results with safe filenames and existing underlines."""
+    if index > 0:
+        console.print()
+    console.print(terminal_safe_text(f"File: {filename}", style="bold blue"))
+    console.print("─" * (len(filename) + 6))
+
+
+def _emit_json_results(json_results: list[dict[str, object]], file_count: int) -> None:
+    """Emit successful results using single-object and multiple-input array conventions."""
+    if json_results:
+        payload: object = json_results[0] if file_count == 1 else json_results
+        print(json.dumps(payload, indent=2))
+    elif file_count > 1:
+        print("[]")
 
 
 @app.command(name="")
@@ -778,23 +867,7 @@ def inspect(
     """
     Inspect Parquet files and display their metadata, compression settings, and bloom filter information.
     """
-    # Expand glob patterns and collect all matching files
-    all_files = []
-    for pattern in filenames:
-        matches = glob.glob(pattern)
-        if matches:
-            all_files.extend(matches)
-        else:
-            # If no matches found, treat as literal filename (for better error reporting)
-            all_files.append(pattern)
-
-    # Remove duplicates while preserving order
-    seen = set()
-    unique_files = []
-    for file in all_files:
-        if file not in seen:
-            seen.add(file)
-            unique_files.append(file)
+    unique_files = _expand_unique_files(filenames)
 
     # Process each file
     had_errors = False
@@ -802,10 +875,7 @@ def inspect(
     for i, filename in enumerate(unique_files):
         # For multiple files, add a header to separate results
         if format == OutputFormat.RICH and len(unique_files) > 1:
-            if i > 0:
-                console.print()  # Add blank line between files
-            console.print(terminal_safe_text(f"File: {filename}", style="bold blue"))
-            console.print("─" * (len(filename) + 6))
+            _print_file_heading(filename, i)
 
         try:
             result = inspect_single_file(
@@ -827,11 +897,8 @@ def inspect(
             had_errors = True
             continue
 
-    if format == OutputFormat.JSON and json_results:
-        payload: object = json_results[0] if len(unique_files) == 1 else json_results
-        print(json.dumps(payload, indent=2))
-    elif format == OutputFormat.JSON and len(unique_files) > 1:
-        print("[]")
+    if format == OutputFormat.JSON:
+        _emit_json_results(json_results, len(unique_files))
 
     if had_errors:
         raise typer.Exit(code=1)
