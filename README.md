@@ -2,6 +2,8 @@
 
 [![Python package](https://github.com/MiguelElGallo/iparq/actions/workflows/python-package.yml/badge.svg)](https://github.com/MiguelElGallo/iparq/actions/workflows/python-package.yml)
 
+[![Python quality](https://github.com/MiguelElGallo/iparq/actions/workflows/python-quality.yml/badge.svg)](https://github.com/MiguelElGallo/iparq/actions/workflows/python-quality.yml)
+
 [![Dependabot Updates](https://github.com/MiguelElGallo/iparq/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/MiguelElGallo/iparq/actions/workflows/dependabot/dependabot-updates)
 
 [![Upload Python Package](https://github.com/MiguelElGallo/iparq/actions/workflows/python-publish.yml/badge.svg)](https://github.com/MiguelElGallo/iparq/actions/workflows/python-publish.yml)
@@ -24,6 +26,10 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
 - **Machine-readable output**: Emits JSON for scripts and agent workflows.
 
 iParq requires Python 3.10 or later.
+
+Current release: **[0.8.2](https://github.com/MiguelElGallo/iparq/releases/tag/v0.8.2)**.
+See the [changelog](CHANGELOG.md) for release changes. Contributor quality checks
+are documented in [CONTRIBUTING.md](CONTRIBUTING.md#run-the-python-quality-checks).
 
 ## Installation
 

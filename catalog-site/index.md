@@ -2,6 +2,8 @@
 
 iParq is a free, MIT-licensed command-line tool and Agent Skill for inspecting how local Parquet files were written. It reports metadata without querying row data, uploading files, or modifying inputs.
 
+Current release: [iParq 0.8.2](https://github.com/MiguelElGallo/iparq/releases/tag/v0.8.2).
+
 ## When to use iParq
 
 Use iParq to inspect or compare:

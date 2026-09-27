@@ -66,6 +66,27 @@ The initial counts and full diagnostics remain in the historical
 The [completed fixes and validation report](reports/pythonprs-fixes-2026-09-27.md)
 records the separate fix commits and passing results on Python 3.10 and 3.13.
 
+## Releases
+
+Keep the version aligned in `pyproject.toml`, `src/iparq/__init__.py`, `uv.lock`,
+both plugin manifests, the Copilot marketplace, the discovery catalog, and the
+website's structured metadata. Refresh the catalog's `updatedAt` timestamp and
+update the changelog and current-release links. Regenerate the lock with
+`uv lock` and validate all quality gates before merging the release PR.
+
+Tag the tested merged revision with `v` followed by the package version, then
+create its GitHub release. PyPI publishing uses a separate manual workflow;
+creating the GitHub release does not trigger it. For 0.8.2, dispatch it with:
+
+```sh
+gh workflow run python-publish.yml --repo MiguelElGallo/iparq --ref v0.8.2
+```
+
+The workflow rejects a ref that disagrees with the package version. It runs all
+five quality gates, mypy, and ty, then smoke-tests the exact built wheel in an
+isolated environment before publishing. Verify the workflow result, published
+PyPI version, fresh CLI installation, and deployed catalog after release.
+
 ## Reporting Issues
 
 If you encounter any issues or bugs, please open an issue in the repository. Provide as much detail as possible, including steps to reproduce the issue and any relevant logs or screenshots.
