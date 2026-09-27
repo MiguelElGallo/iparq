@@ -2,6 +2,7 @@ import glob
 import json
 import unicodedata
 from enum import Enum
+from typing import Literal, overload
 
 import pyarrow.parquet as pq
 import typer
@@ -182,7 +183,7 @@ def add_terminal_safe_row(table: Table, *values: object) -> None:
     table.add_row(*(terminal_safe_text(value) for value in values))
 
 
-def build_meta_model(parquet_metadata) -> ParquetMetaModel:
+def build_meta_model(parquet_metadata: pq.FileMetaData) -> ParquetMetaModel:
     """Build the file-level metadata model."""
     metadata = parquet_metadata.metadata or {}
     metadata_keys = sorted(key.decode("utf-8", errors="replace") for key in metadata)
@@ -197,7 +198,7 @@ def build_meta_model(parquet_metadata) -> ParquetMetaModel:
     )
 
 
-def collect_row_group_info(parquet_metadata) -> list[RowGroupInfo]:
+def collect_row_group_info(parquet_metadata: pq.FileMetaData) -> list[RowGroupInfo]:
     """Collect row counts, sizes, and declared sort order for every row group."""
     row_groups: list[RowGroupInfo] = []
     for row_group_index in range(parquet_metadata.num_row_groups):
@@ -230,7 +231,26 @@ def optional_positive(value: int) -> int | None:
     return value if value > 0 else None
 
 
-def optional_column_metadata(column_chunk, attribute: str):
+@overload
+def optional_column_metadata(
+    column_chunk: pq.ColumnChunkMetaData, attribute: Literal["has_index_page"]
+) -> bool | None:
+    """Read the optional boolean flag for a legacy column index page."""
+    ...
+
+
+@overload
+def optional_column_metadata(
+    column_chunk: pq.ColumnChunkMetaData, attribute: Literal["index_page_offset"]
+) -> int | None:
+    """Read the optional byte offset for a legacy column index page."""
+    ...
+
+
+def optional_column_metadata(
+    column_chunk: pq.ColumnChunkMetaData,
+    attribute: Literal["has_index_page", "index_page_offset"],
+) -> bool | int | None:
     """Read optional column metadata across PyArrow versions and file formats."""
     try:
         return getattr(column_chunk, attribute)
@@ -238,7 +258,7 @@ def optional_column_metadata(column_chunk, attribute: str):
         return None
 
 
-def read_parquet_metadata(filename: str):
+def read_parquet_metadata(filename: str) -> tuple[pq.FileMetaData, set[str]]:
     """
     Reads the metadata of a Parquet file and extracts the compression codecs used.
 
@@ -263,7 +283,7 @@ def read_parquet_metadata(filename: str):
     return parquet_metadata, compression_codecs
 
 
-def print_parquet_metadata(parquet_metadata):
+def print_parquet_metadata(parquet_metadata: pq.FileMetaData) -> None:
     """
     Prints the metadata of a Parquet file.
 
@@ -290,7 +310,9 @@ def print_parquet_metadata(parquet_metadata):
         pass
 
 
-def print_compression_types(parquet_metadata, column_info: ParquetColumnInfo) -> None:
+def print_compression_types(
+    parquet_metadata: pq.FileMetaData, column_info: ParquetColumnInfo
+) -> None:
     """
     Collects compression type information for each column and adds it to the column_info model.
 
@@ -353,7 +375,9 @@ def print_compression_types(parquet_metadata, column_info: ParquetColumnInfo) ->
             )
 
 
-def print_bloom_filter_info(parquet_metadata, column_info: ParquetColumnInfo) -> None:
+def print_bloom_filter_info(
+    parquet_metadata: pq.FileMetaData, column_info: ParquetColumnInfo
+) -> None:
     """
     Updates the column_info model with bloom filter information.
 
@@ -401,7 +425,9 @@ def _update_column_statistics(
     _apply_column_statistics(column, column_chunk.statistics)
 
 
-def print_min_max_statistics(parquet_metadata, column_info: ParquetColumnInfo) -> None:
+def print_min_max_statistics(
+    parquet_metadata: pq.FileMetaData, column_info: ParquetColumnInfo
+) -> None:
     """
     Updates the column_info model with min/max statistics information.
 
@@ -673,7 +699,7 @@ def print_storage_details_table(
 def build_json_result(
     meta_model: ParquetMetaModel,
     column_info: ParquetColumnInfo,
-    compression_codecs: set,
+    compression_codecs: set[str],
     metadata_only: bool = False,
     row_groups: list[RowGroupInfo] | None = None,
 ) -> dict[str, object]:
@@ -695,7 +721,7 @@ def build_json_result(
 def output_json(
     meta_model: ParquetMetaModel,
     column_info: ParquetColumnInfo,
-    compression_codecs: set,
+    compression_codecs: set[str],
     metadata_only: bool = False,
 ) -> None:
     """
@@ -863,7 +889,7 @@ def inspect(
         "-d",
         help="Show row groups, schema, indexes, page locations, and statistics",
     ),
-):
+) -> None:
     """
     Inspect Parquet files and display their metadata, compression settings, and bloom filter information.
     """
