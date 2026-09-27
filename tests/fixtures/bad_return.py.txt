@@ -1,0 +1,6 @@
+"""Provide a deliberately failing example for a focused quality gate."""
+
+
+def describe_count() -> int:
+    """Return a count while violating the declared integer return contract."""
+    return "oops"

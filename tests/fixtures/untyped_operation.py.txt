@@ -1,0 +1,6 @@
+"""Provide a deliberately failing example for a focused quality gate."""
+
+
+def calculate():
+    """Demonstrate checking inside functions that have no explicit type annotations."""
+    return 1 + "oops"

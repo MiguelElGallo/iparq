@@ -19,6 +19,51 @@ Thank you for considering contributing to iparq! We're excited to collaborate wi
 - **Tests**: Include tests for your changes to ensure functionality and avoid regressions.
 - **Commit Messages**: Write clear and concise commit messages. Follow the format: `type(scope): message`.
 
+## Run the Python quality checks
+
+Install the locked application, test, and quality dependencies with uv:
+
+```sh
+uv sync --all-extras --locked
+uv run --no-sync python -m scripts.quality all
+```
+
+The runner executes every gate even when another gate fails, then prints a
+pass/fail summary. Run one gate by replacing `all` with `complexity`, `ruff`,
+`types`, `docstrings`, or `tests`.
+
+| Gate | Requirement |
+| --- | --- |
+| `complexity` | Cognitive complexity at most 15 per function (complexipy). |
+| `ruff` | McCabe complexity at most 10, lint, import ordering, explicit parameter and return annotations, and formatting. |
+| `types` | Pyrefly default checks, including unannotated function bodies and required annotations. |
+| `docstrings` | 100% Interrogate coverage plus direct checks for literal module, class, and function docstrings. Function summaries need at least 8 words and 40 non-whitespace characters in their first paragraph. |
+| `tests` | The application tests and tests of the checks themselves must pass. |
+
+All four code gates use the same Python file inventory, including tests,
+examples, private and nested functions, and hidden directories. Environment and
+generated directories listed in `[tool.pythonprs]` are excluded. Inline ignores,
+complexity snapshots, and tool-specific ignore files cannot hide violations.
+The existing mypy and ty checks also remain available:
+
+```sh
+uv run --no-sync mypy src/iparq --config-file=pyproject.toml
+uv run --no-sync ty check
+```
+
+The policy, runner, example, fixtures, and gate tests are adapted from
+[pythonprs at commit 7d5cdf1](https://github.com/MiguelElGallo/pythonprs/tree/7d5cdf1755c0aab3fc43c0f66d74322528920527).
+Ruff and Pyrefly target iParq's supported Python 3.10 syntax; the runner uses
+`tomli` on Python 3.10. The local default remains Python 3.13.
+
+The `Python quality` workflow provides five independent `Quality (...)` jobs
+for pushes, pull requests, manual runs, and merge groups. Requiring these jobs
+before merging is a separate GitHub ruleset setting; enable it after resolving
+the baseline failures.
+
+The initial counts and full diagnostics are saved in the
+[27 September 2026 baseline report](reports/pythonprs-baseline-2026-09-27.md).
+
 ## Reporting Issues
 
 If you encounter any issues or bugs, please open an issue in the repository. Provide as much detail as possible, including steps to reproduce the issue and any relevant logs or screenshots.

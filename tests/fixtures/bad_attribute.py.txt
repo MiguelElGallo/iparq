@@ -1,0 +1,6 @@
+"""Provide a deliberately failing example for a focused quality gate."""
+
+
+def describe_count(value: int) -> str:
+    """Describe an integer while mistakenly invoking a string only method."""
+    return value.upper()

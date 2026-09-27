@@ -1,0 +1,6 @@
+"""Provide a deliberately failing example for a focused quality gate."""
+
+
+def append_suffix(value: int) -> int:
+    """Demonstrate an invalid addition between integer input and textual suffix."""
+    return value + "oops"

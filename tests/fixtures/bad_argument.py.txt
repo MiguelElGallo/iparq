@@ -1,0 +1,9 @@
+"""Provide a deliberately failing example for a focused quality gate."""
+
+
+def increment(value: int) -> int:
+    """Increase the supplied integer value by exactly one additional unit."""
+    return value + 1
+
+
+RESULT = increment("oops")
