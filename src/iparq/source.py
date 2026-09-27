@@ -1,3 +1,5 @@
+"""Inspect Parquet metadata and render terminal tables or JSON results."""
+
 import glob
 import json
 import unicodedata
@@ -184,7 +186,7 @@ def add_terminal_safe_row(table: Table, *values: object) -> None:
 
 
 def build_meta_model(parquet_metadata: pq.FileMetaData) -> ParquetMetaModel:
-    """Build the file-level metadata model."""
+    """Build file metadata with counts, format details, and decoded metadata keys."""
     metadata = parquet_metadata.metadata or {}
     metadata_keys = sorted(key.decode("utf-8", errors="replace") for key in metadata)
     return ParquetMetaModel(
@@ -285,7 +287,7 @@ def read_parquet_metadata(filename: str) -> tuple[pq.FileMetaData, set[str]]:
 
 def print_parquet_metadata(parquet_metadata: pq.FileMetaData) -> None:
     """
-    Prints the metadata of a Parquet file.
+    Print the file metadata model and report unavailable attributes to the console.
 
     Args:
         parquet_metadata: An object containing metadata of a Parquet file.
@@ -297,8 +299,9 @@ def print_parquet_metadata(parquet_metadata: pq.FileMetaData) -> None:
                           - format_version: The format version of the Parquet file.
                           - serialized_size: The serialized size of the Parquet file.
 
-    Raises:
-        AttributeError: If the provided parquet_metadata object does not have the expected attributes.
+    Notes:
+        Missing metadata attributes are reported to the console without
+        propagating AttributeError.
     """
     try:
         meta = build_meta_model(parquet_metadata)
@@ -454,7 +457,7 @@ def print_min_max_statistics(
 
 
 def format_size(size_bytes: int | None) -> str:
-    """Format bytes into human-readable size."""
+    """Format byte counts in 1024-based units and return N/A for missing sizes."""
     if size_bytes is None:
         return "N/A"
     size: float = float(size_bytes)
@@ -725,12 +728,13 @@ def output_json(
     metadata_only: bool = False,
 ) -> None:
     """
-    Outputs the parquet information in JSON format.
+    Write the selected Parquet metadata and column details to stdout as JSON.
 
     Args:
         meta_model: The Parquet metadata model
         column_info: The column information model
         compression_codecs: Set of compression codecs used
+        metadata_only: Omit column details and compression codecs when true.
     """
     result = build_json_result(
         meta_model, column_info, compression_codecs, metadata_only=metadata_only

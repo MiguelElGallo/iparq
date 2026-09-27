@@ -1,3 +1,5 @@
+"""Verify Python test configuration and immutable package publishing dependencies."""
+
 import re
 from pathlib import Path
 

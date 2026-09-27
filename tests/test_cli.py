@@ -1,3 +1,5 @@
+"""Verify CLI metadata output, terminal safety, filtering, and size formatting."""
+
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -46,7 +48,7 @@ def test_parquet_info() -> None:
 
 
 def test_metadata_only_flag() -> None:
-    """Test that the metadata-only flag works correctly."""
+    """Verify metadata-only output displays file metadata while omitting column tables."""
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
     result = runner.invoke(app, ["inspect", "--metadata-only", str(fixture_path)])
@@ -68,7 +70,7 @@ def test_column_filter() -> None:
 
 
 def test_json_output() -> None:
-    """Test JSON output format."""
+    """Verify JSON inspection includes file, column, row-group, and optional metadata."""
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
     result = runner.invoke(app, ["inspect", "--format", "json", str(fixture_path)])
@@ -193,7 +195,7 @@ def test_multiple_file_json_is_one_document(tmp_path: Path) -> None:
 
 
 def test_json_column_warning_is_on_stderr() -> None:
-    """Diagnostics must not invalidate machine-readable stdout."""
+    """Keep missing-column warnings on stderr so JSON stdout remains valid."""
     result = CliRunner().invoke(
         app,
         [
@@ -270,7 +272,7 @@ def test_multiple_different_files() -> None:
 
 
 def test_glob_pattern() -> None:
-    """Test that glob patterns work correctly."""
+    """Inspect files matched by wildcard patterns supplied to the CLI."""
     runner = CliRunner()
     # Test with a pattern that should match dummy files
     result = runner.invoke(app, ["inspect", str(FIXTURES_DIR / "dummy*.parquet")])
@@ -337,7 +339,7 @@ def test_sizes_flag_with_json() -> None:
 
 
 def test_details_flag() -> None:
-    """Test that --details displays storage metadata tables."""
+    """Verify detailed output includes storage, schema, index, statistics, and location tables."""
     runner = CliRunner()
     result = runner.invoke(
         app,
@@ -387,7 +389,7 @@ def test_row_group_sizes_and_sort_order(tmp_path: Path) -> None:
 
 
 def test_pyarrow_25_bloom_filter_and_page_indexes(tmp_path: Path) -> None:
-    """Test metadata newly exposed by PyArrow 25."""
+    """Verify PyArrow 25 exposes Bloom-filter offsets, lengths, and page index flags."""
     parquet_path = tmp_path / "bloom-filter.parquet"
     table = pa.table({"id": [1, 2, 3, 4], "value": ["a", "b", "c", "d"]})
     pq.write_table(
@@ -438,36 +440,36 @@ def test_legacy_bloom_filter_without_length_is_detected() -> None:
 
 
 def test_format_size_bytes() -> None:
-    """Test format_size function with bytes."""
+    """Format byte counts and zero values while preserving unknown sizes."""
     assert format_size(100) == "100.0B"
     assert format_size(0) == "0.0B"
     assert format_size(None) == "N/A"
 
 
 def test_format_size_kilobytes() -> None:
-    """Test format_size function with kilobytes."""
+    """Convert byte counts to kilobytes using multiples of 1024 bytes."""
     assert format_size(1024) == "1.0KB"
     assert format_size(2048) == "2.0KB"
 
 
 def test_format_size_megabytes() -> None:
-    """Test format_size function with megabytes."""
+    """Convert byte counts to megabytes while retaining the displayed scaled values."""
     assert format_size(1024 * 1024) == "1.0MB"
     assert format_size(5 * 1024 * 1024) == "5.0MB"
 
 
 def test_format_size_gigabytes() -> None:
-    """Test format_size function with gigabytes."""
+    """Render 1024 cubed bytes with a one-decimal gigabyte size label."""
     assert format_size(1024 * 1024 * 1024) == "1.0GB"
 
 
 def test_format_size_terabytes() -> None:
-    """Test format_size function with terabytes."""
+    """Render 1024 to the fourth power as a one-decimal terabyte size."""
     assert format_size(1024 * 1024 * 1024 * 1024) == "1.0TB"
 
 
 def test_column_info_model() -> None:
-    """Test ColumnInfo model with new fields."""
+    """Preserve supplied exactness flags, encryption state, value counts, and storage sizes."""
     col = ColumnInfo(
         row_group=0,
         column_name="test_col",
@@ -509,7 +511,7 @@ def test_column_info_model_defaults() -> None:
 
 
 def test_output_json_function() -> None:
-    """Test the output_json function directly."""
+    """Serialize file metadata, column exactness flags, and compression codecs to stdout."""
     import io
     import sys
 
@@ -574,7 +576,7 @@ def test_column_filter_no_match() -> None:
 
 
 def test_nonexistent_file() -> None:
-    """Test error handling for non-existent file."""
+    """Report a missing input file on stderr and exit with failure."""
     runner = CliRunner()
     result = runner.invoke(app, ["inspect", "totally_fake_file.parquet"])
 
@@ -584,7 +586,7 @@ def test_nonexistent_file() -> None:
 
 
 def test_default_command() -> None:
-    """Test that the empty command name works as default."""
+    """Verify the inspect command succeeds and prints the file metadata model."""
     runner = CliRunner()
     # The app has both @app.command(name="") and @app.command(name="inspect")
     # So 'inspect' is required but maps to the same function

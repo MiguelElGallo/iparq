@@ -58,11 +58,13 @@ Ruff and Pyrefly target iParq's supported Python 3.10 syntax; the runner uses
 
 The `Python quality` workflow provides five independent `Quality (...)` jobs
 for pushes, pull requests, manual runs, and merge groups. Requiring these jobs
-before merging is a separate GitHub ruleset setting; enable it after resolving
-the baseline failures.
+before merging is a separate GitHub ruleset setting. The local checks now pass;
+repository administrators can select those five jobs as required checks.
 
-The initial counts and full diagnostics are saved in the
+The initial counts and full diagnostics remain in the historical
 [27 September 2026 baseline report](reports/pythonprs-baseline-2026-09-27.md).
+The [completed fixes and validation report](reports/pythonprs-fixes-2026-09-27.md)
+records the separate fix commits and passing results on Python 3.10 and 3.13.
 
 ## Reporting Issues
 
