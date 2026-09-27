@@ -1,3 +1,5 @@
+"""Verify plugin manifests, marketplace entries, and inspector skill guidance."""
+
 import json
 import re
 from pathlib import Path
@@ -22,6 +24,7 @@ PLUGIN_SKILL = PLUGIN_ROOT / "skills" / "iparq-parquet-inspector"
 
 
 def project_version() -> str:
+    """Read the project release version from its packaging configuration."""
     project = (REPOSITORY_ROOT / "pyproject.toml").read_text()
     match = re.search(r'^version = "([^"]+)"$', project, re.MULTILINE)
     assert match is not None
@@ -29,6 +32,7 @@ def project_version() -> str:
 
 
 def test_open_agent_plugin_manifest_is_portable_and_versioned() -> None:
+    """Validate the portable plugin manifest and its matching project release version."""
     manifest = json.loads(OPEN_MANIFEST_PATH.read_text())
     schema = json.loads(AGENT_PLUGIN_SCHEMA_PATH.read_text())
     validator_class = validator_for(schema)
@@ -40,6 +44,7 @@ def test_open_agent_plugin_manifest_is_portable_and_versioned() -> None:
 
 
 def test_plugin_does_not_bundle_an_mcp_server() -> None:
+    """Ensure the inspector plugin ships without MCP configuration or server declarations."""
     forbidden_paths = {
         PLUGIN_ROOT / "mcp.json",
         PLUGIN_ROOT / ".mcp.json",
@@ -53,6 +58,7 @@ def test_plugin_does_not_bundle_an_mcp_server() -> None:
 
 
 def test_codex_plugin_manifest_matches_release() -> None:
+    """Check Codex plugin metadata against the current release and skill directory."""
     manifest = json.loads(CODEX_MANIFEST_PATH.read_text())
 
     assert manifest["name"] == PLUGIN_ROOT.name
@@ -63,6 +69,7 @@ def test_codex_plugin_manifest_matches_release() -> None:
 
 
 def test_plugin_skill_matches_canonical_skill() -> None:
+    """Require bundled inspector skill files to match their canonical copies exactly."""
     for relative_path in (Path("SKILL.md"), Path("agents/openai.yaml")):
         assert (PLUGIN_SKILL / relative_path).read_bytes() == (
             CANONICAL_SKILL / relative_path
@@ -70,6 +77,7 @@ def test_plugin_skill_matches_canonical_skill() -> None:
 
 
 def test_codex_marketplace_points_to_plugin() -> None:
+    """Verify the Codex marketplace entry identifies the local plugin and installation policy."""
     marketplace = json.loads(CODEX_MARKETPLACE_PATH.read_text())
     entry = next(entry for entry in marketplace["plugins"] if entry["name"] == "iparq")
 
@@ -86,6 +94,7 @@ def test_codex_marketplace_points_to_plugin() -> None:
 
 
 def test_copilot_marketplace_points_to_plugin() -> None:
+    """Verify the Copilot marketplace owner, local plugin location, and release versions."""
     marketplace = json.loads(COPILOT_MARKETPLACE_PATH.read_text())
     entry = next(entry for entry in marketplace["plugins"] if entry["name"] == "iparq")
 
@@ -100,7 +109,7 @@ def test_copilot_marketplace_points_to_plugin() -> None:
 
 
 def tri_state_boolean_fields() -> set[str]:
-    """Return ColumnInfo fields typed ``bool | None``.
+    """Return metadata boolean fields whose unknown state is represented by None.
 
     These are the fields where ``null`` means "the reader could not determine
     this" rather than "false", so the skill must tell agents not to collapse
@@ -117,6 +126,7 @@ def tri_state_boolean_fields() -> set[str]:
 
 
 def test_skill_documents_tri_state_boolean_fields() -> None:
+    """Require the inspector skill to list every nullable boolean metadata field."""
     skill = (CANONICAL_SKILL / "SKILL.md").read_text()
     tri_state = tri_state_boolean_fields()
 
@@ -129,6 +139,7 @@ def test_skill_documents_tri_state_boolean_fields() -> None:
 
 
 def test_skill_documents_semantically_subtle_fields() -> None:
+    """Require skill guidance to name statistics and legacy index metadata fields."""
     skill = (CANONICAL_SKILL / "SKILL.md").read_text()
     subtle_fields = ("statistics_num_values", "geo_statistics", "index_page_offset")
 
@@ -140,6 +151,7 @@ def test_skill_documents_semantically_subtle_fields() -> None:
 
 
 def test_skill_explains_that_statistics_num_values_excludes_nulls() -> None:
+    """Require statistics value counts to be described as excluding null values."""
     skill = (CANONICAL_SKILL / "SKILL.md").read_text()
     explaining_lines = [
         line

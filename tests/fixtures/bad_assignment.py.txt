@@ -1,0 +1,7 @@
+"""Provide a deliberately failing example for a focused quality gate."""
+
+
+def read_count() -> int:
+    """Read a count while demonstrating an incompatible local value assignment."""
+    count: int = "oops"
+    return count

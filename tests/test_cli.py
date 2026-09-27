@@ -1,3 +1,5 @@
+"""Verify CLI metadata output, terminal safety, filtering, and size formatting."""
+
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -21,7 +23,7 @@ FIXTURES_DIR = Path(__file__).parent
 fixture_path = FIXTURES_DIR / "dummy.parquet"
 
 
-def test_parquet_info():
+def test_parquet_info() -> None:
     """Test that the CLI correctly displays parquet file information."""
     runner = CliRunner()
     result = runner.invoke(app, ["inspect", str(fixture_path)])
@@ -45,8 +47,8 @@ def test_parquet_info():
     assert "SNAPPY" in result.stdout
 
 
-def test_metadata_only_flag():
-    """Test that the metadata-only flag works correctly."""
+def test_metadata_only_flag() -> None:
+    """Verify metadata-only output displays file metadata while omitting column tables."""
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
     result = runner.invoke(app, ["inspect", "--metadata-only", str(fixture_path)])
@@ -56,7 +58,7 @@ def test_metadata_only_flag():
     assert "Parquet Column Information" not in result.stdout
 
 
-def test_column_filter():
+def test_column_filter() -> None:
     """Test that filtering by column name works correctly."""
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
@@ -67,8 +69,8 @@ def test_column_filter():
     assert "two" not in result.stdout
 
 
-def test_json_output():
-    """Test JSON output format."""
+def test_json_output() -> None:
+    """Verify JSON inspection includes file, column, row-group, and optional metadata."""
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
     result = runner.invoke(app, ["inspect", "--format", "json", str(fixture_path)])
@@ -130,7 +132,7 @@ def test_json_output():
         assert column["index_page_offset"] is None
 
 
-def test_json_preserves_rich_markup_like_values(tmp_path: Path):
+def test_json_preserves_rich_markup_like_values(tmp_path: Path) -> None:
     """JSON output must not interpret Parquet strings as Rich markup."""
     parquet_path = tmp_path / "markup.parquet"
     value = "[red]secret[/red]"
@@ -144,7 +146,7 @@ def test_json_preserves_rich_markup_like_values(tmp_path: Path):
     assert data["columns"][0]["max_value"] == value
 
 
-def test_rich_output_neutralizes_untrusted_terminal_sequences(tmp_path: Path):
+def test_rich_output_neutralizes_untrusted_terminal_sequences(tmp_path: Path) -> None:
     """Parquet metadata must render literally without terminal control effects."""
     parquet_path = tmp_path / "terminal-controls.parquet"
     column_name = (
@@ -176,7 +178,7 @@ def test_rich_output_neutralizes_untrusted_terminal_sequences(tmp_path: Path):
     assert json.loads(json_result.stdout)["columns"][0]["column_name"] == column_name
 
 
-def test_multiple_file_json_is_one_document(tmp_path: Path):
+def test_multiple_file_json_is_one_document(tmp_path: Path) -> None:
     """Multiple JSON results are emitted as a single array with filenames."""
     second_path = tmp_path / "second.parquet"
     pq.write_table(pa.table({"value": [1, 2]}), second_path)
@@ -192,8 +194,8 @@ def test_multiple_file_json_is_one_document(tmp_path: Path):
     assert [item["metadata"]["num_rows"] for item in data] == [3, 2]
 
 
-def test_json_column_warning_is_on_stderr():
-    """Diagnostics must not invalidate machine-readable stdout."""
+def test_json_column_warning_is_on_stderr() -> None:
+    """Keep missing-column warnings on stderr so JSON stdout remains valid."""
     result = CliRunner().invoke(
         app,
         [
@@ -211,7 +213,7 @@ def test_json_column_warning_is_on_stderr():
     assert "No columns match the filter" in result.stderr
 
 
-def test_metadata_only_json_omits_column_details():
+def test_metadata_only_json_omits_column_details() -> None:
     """The metadata-only option has the same meaning for JSON output."""
     result = CliRunner().invoke(
         app,
@@ -222,7 +224,7 @@ def test_metadata_only_json_omits_column_details():
     assert set(json.loads(result.stdout)) == {"metadata"}
 
 
-def test_multiple_files():
+def test_multiple_files() -> None:
     """Test that multiple files can be inspected in a single command."""
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
@@ -239,7 +241,7 @@ def test_multiple_files():
     assert result.stdout.count("ParquetMetaModel") == 1
 
 
-def test_multiple_different_files():
+def test_multiple_different_files() -> None:
     """Test multiple different files by creating a temporary copy."""
     import shutil
     import tempfile
@@ -269,8 +271,8 @@ def test_multiple_different_files():
         os.unlink(tmp_path)
 
 
-def test_glob_pattern():
-    """Test that glob patterns work correctly."""
+def test_glob_pattern() -> None:
+    """Inspect files matched by wildcard patterns supplied to the CLI."""
     runner = CliRunner()
     # Test with a pattern that should match dummy files
     result = runner.invoke(app, ["inspect", str(FIXTURES_DIR / "dummy*.parquet")])
@@ -280,7 +282,7 @@ def test_glob_pattern():
     assert "ParquetMetaModel" in result.stdout
 
 
-def test_single_file_no_header():
+def test_single_file_no_header() -> None:
     """Test that single files don't show file headers."""
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
@@ -292,7 +294,7 @@ def test_single_file_no_header():
     assert "ParquetMetaModel" in result.stdout
 
 
-def test_error_handling_with_multiple_files():
+def test_error_handling_with_multiple_files() -> None:
     """Test that errors in one file don't stop processing of other files."""
     runner = CliRunner()
     fixture_path = FIXTURES_DIR / "dummy.parquet"
@@ -308,7 +310,7 @@ def test_error_handling_with_multiple_files():
     assert "nonexistent.parquet" in result.stderr
 
 
-def test_sizes_flag():
+def test_sizes_flag() -> None:
     """Test that the --sizes flag displays column size information."""
     runner = CliRunner()
     result = runner.invoke(app, ["inspect", "--sizes", str(fixture_path)])
@@ -319,7 +321,7 @@ def test_sizes_flag():
     # The actual values depend on the test file
 
 
-def test_sizes_flag_with_json():
+def test_sizes_flag_with_json() -> None:
     """Test that --sizes flag works with JSON output and includes size fields."""
     runner = CliRunner()
     result = runner.invoke(
@@ -336,8 +338,8 @@ def test_sizes_flag_with_json():
         assert "total_uncompressed_size" in column
 
 
-def test_details_flag():
-    """Test that --details displays storage metadata tables."""
+def test_details_flag() -> None:
+    """Verify detailed output includes storage, schema, index, statistics, and location tables."""
     runner = CliRunner()
     result = runner.invoke(
         app,
@@ -358,7 +360,7 @@ def test_details_flag():
     assert "BYTE_ARRAY" in result.stdout
 
 
-def test_row_group_sizes_and_sort_order(tmp_path: Path):
+def test_row_group_sizes_and_sort_order(tmp_path: Path) -> None:
     """Expose row-group storage size and declared sorting metadata."""
     parquet_path = tmp_path / "sorted.parquet"
     table = pa.table({"id": [1, 2, 3, 4], "value": ["a", "b", "c", "d"]})
@@ -386,8 +388,8 @@ def test_row_group_sizes_and_sort_order(tmp_path: Path):
     ]
 
 
-def test_pyarrow_25_bloom_filter_and_page_indexes(tmp_path: Path):
-    """Test metadata newly exposed by PyArrow 25."""
+def test_pyarrow_25_bloom_filter_and_page_indexes(tmp_path: Path) -> None:
+    """Verify PyArrow 25 exposes Bloom-filter offsets, lengths, and page index flags."""
     parquet_path = tmp_path / "bloom-filter.parquet"
     table = pa.table({"id": [1, 2, 3, 4], "value": ["a", "b", "c", "d"]})
     pq.write_table(
@@ -412,7 +414,7 @@ def test_pyarrow_25_bloom_filter_and_page_indexes(tmp_path: Path):
     assert columns["value"]["has_bloom_filter"] is False
 
 
-def test_legacy_bloom_filter_without_length_is_detected():
+def test_legacy_bloom_filter_without_length_is_detected() -> None:
     """A legacy Bloom offset is sufficient when the newer length is absent."""
     column_info = ParquetColumnInfo(
         columns=[
@@ -437,37 +439,37 @@ def test_legacy_bloom_filter_without_length_is_detected():
     assert column_info.columns[0].bloom_filter_length is None
 
 
-def test_format_size_bytes():
-    """Test format_size function with bytes."""
+def test_format_size_bytes() -> None:
+    """Format byte counts and zero values while preserving unknown sizes."""
     assert format_size(100) == "100.0B"
     assert format_size(0) == "0.0B"
     assert format_size(None) == "N/A"
 
 
-def test_format_size_kilobytes():
-    """Test format_size function with kilobytes."""
+def test_format_size_kilobytes() -> None:
+    """Convert byte counts to kilobytes using multiples of 1024 bytes."""
     assert format_size(1024) == "1.0KB"
     assert format_size(2048) == "2.0KB"
 
 
-def test_format_size_megabytes():
-    """Test format_size function with megabytes."""
+def test_format_size_megabytes() -> None:
+    """Convert byte counts to megabytes while retaining the displayed scaled values."""
     assert format_size(1024 * 1024) == "1.0MB"
     assert format_size(5 * 1024 * 1024) == "5.0MB"
 
 
-def test_format_size_gigabytes():
-    """Test format_size function with gigabytes."""
+def test_format_size_gigabytes() -> None:
+    """Render 1024 cubed bytes with a one-decimal gigabyte size label."""
     assert format_size(1024 * 1024 * 1024) == "1.0GB"
 
 
-def test_format_size_terabytes():
-    """Test format_size function with terabytes."""
+def test_format_size_terabytes() -> None:
+    """Render 1024 to the fourth power as a one-decimal terabyte size."""
     assert format_size(1024 * 1024 * 1024 * 1024) == "1.0TB"
 
 
-def test_column_info_model():
-    """Test ColumnInfo model with new fields."""
+def test_column_info_model() -> None:
+    """Preserve supplied exactness flags, encryption state, value counts, and storage sizes."""
     col = ColumnInfo(
         row_group=0,
         column_name="test_col",
@@ -493,7 +495,7 @@ def test_column_info_model():
     assert col.total_uncompressed_size == 1024
 
 
-def test_column_info_model_defaults():
+def test_column_info_model_defaults() -> None:
     """Test ColumnInfo model with default values for new fields."""
     col = ColumnInfo(
         row_group=0,
@@ -508,8 +510,8 @@ def test_column_info_model_defaults():
     assert col.num_values is None
 
 
-def test_output_json_function():
-    """Test the output_json function directly."""
+def test_output_json_function() -> None:
+    """Serialize file metadata, column exactness flags, and compression codecs to stdout."""
     import io
     import sys
 
@@ -562,7 +564,7 @@ def test_output_json_function():
     assert "ZSTD" in data["compression_codecs"]
 
 
-def test_column_filter_no_match():
+def test_column_filter_no_match() -> None:
     """Test filtering by a column name that doesn't exist."""
     runner = CliRunner()
     result = runner.invoke(
@@ -573,8 +575,8 @@ def test_column_filter_no_match():
     assert "No columns match the filter" in result.stdout
 
 
-def test_nonexistent_file():
-    """Test error handling for non-existent file."""
+def test_nonexistent_file() -> None:
+    """Report a missing input file on stderr and exit with failure."""
     runner = CliRunner()
     result = runner.invoke(app, ["inspect", "totally_fake_file.parquet"])
 
@@ -583,8 +585,8 @@ def test_nonexistent_file():
     assert "Error processing" in result.stderr
 
 
-def test_default_command():
-    """Test that the empty command name works as default."""
+def test_default_command() -> None:
+    """Verify the inspect command succeeds and prints the file metadata model."""
     runner = CliRunner()
     # The app has both @app.command(name="") and @app.command(name="inspect")
     # So 'inspect' is required but maps to the same function

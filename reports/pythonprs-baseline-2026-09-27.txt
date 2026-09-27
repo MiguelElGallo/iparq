@@ -1,0 +1,281 @@
+Running complexipy on .
+examples/good.py normalize_status 0
+examples/good.py total_positive_values 2
+scripts/check_docstrings.py _raise_walk_error 0
+scripts/check_docstrings.py summary_counts 1
+scripts/check_docstrings.py check_docstrings 2
+scripts/check_docstrings.py check_file 5
+scripts/check_docstrings.py _definition_issue 6
+scripts/check_docstrings.py load_policy 6
+scripts/check_docstrings.py discover_python_files 10
+scripts/quality.py run_gate 2
+scripts/quality.py _run 3
+scripts/quality.py gate_commands 4
+scripts/quality.py main 4
+scripts/quality.py _complexity_command 6
+src/iparq/source.py add_terminal_safe_row 0
+src/iparq/source.py output_json 0
+src/iparq/source.py optional_column_metadata 1
+src/iparq/source.py optional_positive 1
+src/iparq/source.py print_parquet_metadata 1
+src/iparq/source.py build_meta_model 2
+src/iparq/source.py collect_row_group_info 3
+src/iparq/source.py read_parquet_metadata 3
+src/iparq/source.py terminal_safe_text 3
+src/iparq/source.py format_size 4
+src/iparq/source.py build_json_result 6
+src/iparq/source.py print_compression_types 9
+src/iparq/source.py print_bloom_filter_info 11
+src/iparq/source.py inspect_single_file 18
+src/iparq/source.py print_column_info_table 19
+src/iparq/source.py inspect 28
+src/iparq/source.py print_storage_details_table 47
+src/iparq/source.py print_min_max_statistics 49
+tests/test_agent_plugin.py project_version 0
+tests/test_agent_plugin.py test_codex_plugin_manifest_matches_release 0
+tests/test_agent_plugin.py test_open_agent_plugin_manifest_is_portable_and_versioned 0
+tests/test_agent_plugin.py test_plugin_does_not_bundle_an_mcp_server 1
+tests/test_agent_plugin.py test_plugin_skill_matches_canonical_skill 1
+tests/test_agent_plugin.py test_skill_documents_semantically_subtle_fields 1
+tests/test_agent_plugin.py test_codex_marketplace_points_to_plugin 2
+tests/test_agent_plugin.py test_copilot_marketplace_points_to_plugin 2
+tests/test_agent_plugin.py test_skill_documents_tri_state_boolean_fields 2
+tests/test_agent_plugin.py test_skill_explains_that_statistics_num_values_excludes_nulls 3
+tests/test_agent_plugin.py tri_state_boolean_fields 4
+tests/test_ai_catalog.py test_catalog_site_has_agent_and_search_discovery_files 0
+tests/test_ai_catalog.py test_ai_catalog_entries_are_discoverable 1
+tests/test_ai_catalog.py test_cataloged_skill_exists_and_has_matching_identity 2
+tests/test_ai_catalog.py test_wheel_bundles_the_cataloged_skill 4
+tests/test_ai_catalog.py test_sitemap_uses_canonical_https_urls 6
+tests/test_cli.py test_column_filter 0
+tests/test_cli.py test_column_filter_no_match 0
+tests/test_cli.py test_column_info_model 0
+tests/test_cli.py test_column_info_model_defaults 0
+tests/test_cli.py test_default_command 0
+tests/test_cli.py test_details_flag 0
+tests/test_cli.py test_error_handling_with_multiple_files 0
+tests/test_cli.py test_format_size_bytes 0
+tests/test_cli.py test_format_size_gigabytes 0
+tests/test_cli.py test_format_size_kilobytes 0
+tests/test_cli.py test_format_size_megabytes 0
+tests/test_cli.py test_format_size_terabytes 0
+tests/test_cli.py test_glob_pattern 0
+tests/test_cli.py test_json_column_warning_is_on_stderr 0
+tests/test_cli.py test_json_preserves_rich_markup_like_values 0
+tests/test_cli.py test_legacy_bloom_filter_without_length_is_detected 0
+tests/test_cli.py test_metadata_only_flag 0
+tests/test_cli.py test_metadata_only_json_omits_column_details 0
+tests/test_cli.py test_multiple_different_files 0
+tests/test_cli.py test_multiple_files 0
+tests/test_cli.py test_nonexistent_file 0
+tests/test_cli.py test_output_json_function 0
+tests/test_cli.py test_rich_output_neutralizes_untrusted_terminal_sequences 0
+tests/test_cli.py test_row_group_sizes_and_sort_order 0
+tests/test_cli.py test_single_file_no_header 0
+tests/test_cli.py test_sizes_flag 0
+tests/test_cli.py test_json_output 1
+tests/test_cli.py test_pyarrow_25_bloom_filter_and_page_indexes 1
+tests/test_cli.py test_sizes_flag_with_json 1
+tests/test_cli.py test_multiple_file_json_is_one_document 2
+tests/test_cli.py test_parquet_info 3
+tests/test_docstrings.py _policy 0
+tests/test_docstrings.py _write_source 0
+tests/test_docstrings.py test_discovery_requires_existing_nonempty_repository 0
+tests/test_docstrings.py test_every_function_kind_requires_its_own_documentation 0
+tests/test_docstrings.py test_inherited_method_documentation_is_insufficient 0
+tests/test_docstrings.py test_summary_counts_only_first_paragraph 0
+tests/test_docstrings.py test_unreadable_source_reports_inspection_error 0
+tests/test_docstrings.py test_discovery_excludes_generated_and_environment_directories 1
+tests/test_docstrings.py test_exact_summary_minimums_are_enforced 1
+tests/test_docstrings.py test_module_and_class_docstrings_cannot_be_omitted 1
+tests/test_docstrings.py test_single_missing_function_never_rounds_to_success 1
+tests/test_docstrings.py test_invalid_or_missing_source_fails_closed 3
+tests/test_quality_gates.py _output 0
+tests/test_quality_gates.py _project 0
+tests/test_quality_gates.py _run_gate 0
+tests/test_quality_gates.py test_all_gates_report_failures_without_stopping_early 0
+tests/test_quality_gates.py test_alternate_complexity_configuration_is_rejected 0
+tests/test_quality_gates.py test_cognitive_complexity_boundary 0
+tests/test_quality_gates.py test_complexity_rejects_partial_scan_modes 0
+tests/test_quality_gates.py test_complexity_uses_reviewed_configuration_threshold 0
+tests/test_quality_gates.py test_documentation_examples_block_changes 0
+tests/test_quality_gates.py test_empty_repository_cannot_silently_pass 0
+tests/test_quality_gates.py test_gate_discovers_python_outside_existing_source_directories 0
+tests/test_quality_gates.py test_good_example_passes_every_gate 0
+tests/test_quality_gates.py test_ignore_file_cannot_hide_repository_source 0
+tests/test_quality_gates.py test_missing_quality_executable_is_a_configuration_failure 0
+tests/test_quality_gates.py test_ruff_requires_function_annotations 0
+tests/test_quality_gates.py test_terminated_quality_tool_cannot_report_success 0
+tests/test_quality_gates.py test_important_type_errors_block_changes 1
+tests/test_quality_gates.py test_inline_suppression_cannot_bypass_gate 1
+tests/test_quality_gates.py test_mccabe_complexity_boundary 1
+tests/test_workflows.py test_pypi_publisher_is_pinned_to_a_commit 0
+tests/test_workflows.py test_python_matrix_uses_the_configured_interpreter 0
+Running ruff on .
+src/iparq/source.py:185:22: ANN001 Missing type annotation for function argument `parquet_metadata`
+src/iparq/source.py:200:28: ANN001 Missing type annotation for function argument `parquet_metadata`
+src/iparq/source.py:233:5: ANN201 Missing return type annotation for public function `optional_column_metadata`
+src/iparq/source.py:233:30: ANN001 Missing type annotation for function argument `column_chunk`
+src/iparq/source.py:241:5: ANN201 Missing return type annotation for public function `read_parquet_metadata`
+src/iparq/source.py:266:5: ANN201 Missing return type annotation for public function `print_parquet_metadata`
+src/iparq/source.py:266:28: ANN001 Missing type annotation for function argument `parquet_metadata`
+src/iparq/source.py:293:29: ANN001 Missing type annotation for function argument `parquet_metadata`
+src/iparq/source.py:356:29: ANN001 Missing type annotation for function argument `parquet_metadata`
+src/iparq/source.py:381:30: ANN001 Missing type annotation for function argument `parquet_metadata`
+src/iparq/source.py:749:5: C901 `inspect` is too complex (14 > 10)
+src/iparq/source.py:749:5: ANN201 Missing return type annotation for public function `inspect`
+tests/test_cli.py:24:5: ANN201 Missing return type annotation for public function `test_parquet_info`
+tests/test_cli.py:48:5: ANN201 Missing return type annotation for public function `test_metadata_only_flag`
+tests/test_cli.py:59:5: ANN201 Missing return type annotation for public function `test_column_filter`
+tests/test_cli.py:70:5: ANN201 Missing return type annotation for public function `test_json_output`
+tests/test_cli.py:133:5: ANN201 Missing return type annotation for public function `test_json_preserves_rich_markup_like_values`
+tests/test_cli.py:147:5: ANN201 Missing return type annotation for public function `test_rich_output_neutralizes_untrusted_terminal_sequences`
+tests/test_cli.py:179:5: ANN201 Missing return type annotation for public function `test_multiple_file_json_is_one_document`
+tests/test_cli.py:195:5: ANN201 Missing return type annotation for public function `test_json_column_warning_is_on_stderr`
+tests/test_cli.py:214:5: ANN201 Missing return type annotation for public function `test_metadata_only_json_omits_column_details`
+tests/test_cli.py:225:5: ANN201 Missing return type annotation for public function `test_multiple_files`
+tests/test_cli.py:242:5: ANN201 Missing return type annotation for public function `test_multiple_different_files`
+tests/test_cli.py:272:5: ANN201 Missing return type annotation for public function `test_glob_pattern`
+tests/test_cli.py:283:5: ANN201 Missing return type annotation for public function `test_single_file_no_header`
+tests/test_cli.py:295:5: ANN201 Missing return type annotation for public function `test_error_handling_with_multiple_files`
+tests/test_cli.py:311:5: ANN201 Missing return type annotation for public function `test_sizes_flag`
+tests/test_cli.py:322:5: ANN201 Missing return type annotation for public function `test_sizes_flag_with_json`
+tests/test_cli.py:339:5: ANN201 Missing return type annotation for public function `test_details_flag`
+tests/test_cli.py:361:5: ANN201 Missing return type annotation for public function `test_row_group_sizes_and_sort_order`
+tests/test_cli.py:389:5: ANN201 Missing return type annotation for public function `test_pyarrow_25_bloom_filter_and_page_indexes`
+tests/test_cli.py:415:5: ANN201 Missing return type annotation for public function `test_legacy_bloom_filter_without_length_is_detected`
+tests/test_cli.py:440:5: ANN201 Missing return type annotation for public function `test_format_size_bytes`
+tests/test_cli.py:447:5: ANN201 Missing return type annotation for public function `test_format_size_kilobytes`
+tests/test_cli.py:453:5: ANN201 Missing return type annotation for public function `test_format_size_megabytes`
+tests/test_cli.py:459:5: ANN201 Missing return type annotation for public function `test_format_size_gigabytes`
+tests/test_cli.py:464:5: ANN201 Missing return type annotation for public function `test_format_size_terabytes`
+tests/test_cli.py:469:5: ANN201 Missing return type annotation for public function `test_column_info_model`
+tests/test_cli.py:496:5: ANN201 Missing return type annotation for public function `test_column_info_model_defaults`
+tests/test_cli.py:511:5: ANN201 Missing return type annotation for public function `test_output_json_function`
+tests/test_cli.py:565:5: ANN201 Missing return type annotation for public function `test_column_filter_no_match`
+tests/test_cli.py:576:5: ANN201 Missing return type annotation for public function `test_nonexistent_file`
+tests/test_cli.py:586:5: ANN201 Missing return type annotation for public function `test_default_command`
+Found 43 errors.
+No fixes available (33 hidden fixes can be enabled with the `--unsafe-fixes` option).
+Running ruff on .
+14 files already formatted
+Running pyrefly on .
+ERROR src/iparq/source.py:185:22-38: `build_meta_model` is missing an annotation for parameter `parquet_metadata` [implicit-any-parameter]
+ERROR src/iparq/source.py:200:28-44: `collect_row_group_info` is missing an annotation for parameter `parquet_metadata` [implicit-any-parameter]
+ERROR src/iparq/source.py:233:5-29: `optional_column_metadata` is missing a return annotation [unannotated-return]
+ERROR src/iparq/source.py:233:30-42: `optional_column_metadata` is missing an annotation for parameter `column_chunk` [implicit-any-parameter]
+ERROR src/iparq/source.py:241:5-26: `read_parquet_metadata` is missing a return annotation [unannotated-return]
+ERROR src/iparq/source.py:266:5-27: `print_parquet_metadata` is missing a return annotation [unannotated-return]
+ERROR src/iparq/source.py:266:28-44: `print_parquet_metadata` is missing an annotation for parameter `parquet_metadata` [implicit-any-parameter]
+ERROR src/iparq/source.py:293:29-45: `print_compression_types` is missing an annotation for parameter `parquet_metadata` [implicit-any-parameter]
+ERROR src/iparq/source.py:356:29-45: `print_bloom_filter_info` is missing an annotation for parameter `parquet_metadata` [implicit-any-parameter]
+ERROR src/iparq/source.py:381:30-46: `print_min_max_statistics` is missing an annotation for parameter `parquet_metadata` [implicit-any-parameter]
+ERROR src/iparq/source.py:749:5-12: `inspect` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:24:5-22: `test_parquet_info` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:48:5-28: `test_metadata_only_flag` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:59:5-23: `test_column_filter` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:70:5-21: `test_json_output` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:133:5-48: `test_json_preserves_rich_markup_like_values` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:147:5-62: `test_rich_output_neutralizes_untrusted_terminal_sequences` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:179:5-44: `test_multiple_file_json_is_one_document` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:195:5-42: `test_json_column_warning_is_on_stderr` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:214:5-49: `test_metadata_only_json_omits_column_details` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:225:5-24: `test_multiple_files` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:242:5-34: `test_multiple_different_files` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:272:5-22: `test_glob_pattern` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:283:5-31: `test_single_file_no_header` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:295:5-44: `test_error_handling_with_multiple_files` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:311:5-20: `test_sizes_flag` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:322:5-30: `test_sizes_flag_with_json` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:339:5-22: `test_details_flag` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:361:5-40: `test_row_group_sizes_and_sort_order` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:389:5-50: `test_pyarrow_25_bloom_filter_and_page_indexes` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:415:5-56: `test_legacy_bloom_filter_without_length_is_detected` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:440:5-27: `test_format_size_bytes` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:447:5-31: `test_format_size_kilobytes` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:453:5-31: `test_format_size_megabytes` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:459:5-31: `test_format_size_gigabytes` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:464:5-31: `test_format_size_terabytes` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:469:5-27: `test_column_info_model` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:496:5-36: `test_column_info_model_defaults` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:511:5-30: `test_output_json_function` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:565:5-32: `test_column_filter_no_match` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:576:5-26: `test_nonexistent_file` is missing a return annotation [unannotated-return]
+ERROR tests/test_cli.py:586:5-25: `test_default_command` is missing a return annotation [unannotated-return]
+ INFO 42 errors (1 warning not shown)
+Running interrogate on .
+================= Coverage for ./ =================
+----------------------------------- Summary ------------------------------------
+| Name                             |    Total |    Miss |    Cover |    Cover% |
+|----------------------------------|----------|---------|----------|-----------|
+| examples/good.py                 |        3 |       0 |        3 |      100% |
+| scripts/__init__.py              |        1 |       0 |        1 |      100% |
+| scripts/check_docstrings.py      |        9 |       0 |        9 |      100% |
+| scripts/quality.py               |        6 |       0 |        6 |      100% |
+| src/iparq/__init__.py            |        1 |       1 |        0 |        0% |
+| src/iparq/source.py              |       26 |       1 |       25 |       96% |
+| tests/__init__.py                |        1 |       0 |        1 |      100% |
+| tests/conftest.py                |        1 |       1 |        0 |        0% |
+| tests/test_agent_plugin.py       |       12 |      11 |        1 |        8% |
+| tests/test_ai_catalog.py         |        6 |       6 |        0 |        0% |
+| tests/test_cli.py                |       32 |       1 |       31 |       97% |
+| tests/test_docstrings.py         |       14 |       0 |       14 |      100% |
+| tests/test_quality_gates.py      |       23 |       0 |       23 |      100% |
+| tests/test_workflows.py          |        3 |       1 |        2 |       67% |
+|----------------------------------|----------|---------|----------|-----------|
+| TOTAL                            |      138 |      22 |      116 |     84.1% |
+--------------- RESULT: FAILED (minimum: 100.0%, actual: 84.1%) ----------------
+./src/iparq/__init__.py:1: <module>: DOC001 missing or blank docstring
+./src/iparq/source.py:1: <module>: DOC001 missing or blank docstring
+./src/iparq/source.py:185: build_meta_model: DOC002 summary has 5 words/32 characters; requires >= 8 words and >= 40 non-whitespace characters
+./src/iparq/source.py:266: print_parquet_metadata: DOC002 summary has 7 words/32 characters; requires >= 8 words and >= 40 non-whitespace characters
+./src/iparq/source.py:421: format_size: DOC002 summary has 5 words/34 characters; requires >= 8 words and >= 40 non-whitespace characters
+./src/iparq/source.py:659: output_json: DOC002 summary has 7 words/41 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/conftest.py:1: <module>: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:1: <module>: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:24: project_version: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:31: test_open_agent_plugin_manifest_is_portable_and_versioned: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:42: test_plugin_does_not_bundle_an_mcp_server: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:55: test_codex_plugin_manifest_matches_release: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:65: test_plugin_skill_matches_canonical_skill: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:72: test_codex_marketplace_points_to_plugin: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:88: test_copilot_marketplace_points_to_plugin: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:102: tri_state_boolean_fields: DOC002 summary has 6 words/41 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_agent_plugin.py:119: test_skill_documents_tri_state_boolean_fields: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:131: test_skill_documents_semantically_subtle_fields: DOC001 missing or blank docstring
+./tests/test_agent_plugin.py:142: test_skill_explains_that_statistics_num_values_excludes_nulls: DOC001 missing or blank docstring
+./tests/test_ai_catalog.py:1: <module>: DOC001 missing or blank docstring
+./tests/test_ai_catalog.py:16: test_ai_catalog_entries_are_discoverable: DOC001 missing or blank docstring
+./tests/test_ai_catalog.py:34: test_cataloged_skill_exists_and_has_matching_identity: DOC001 missing or blank docstring
+./tests/test_ai_catalog.py:63: test_wheel_bundles_the_cataloged_skill: DOC001 missing or blank docstring
+./tests/test_ai_catalog.py:98: test_catalog_site_has_agent_and_search_discovery_files: DOC001 missing or blank docstring
+./tests/test_ai_catalog.py:114: test_sitemap_uses_canonical_https_urls: DOC001 missing or blank docstring
+./tests/test_cli.py:1: <module>: DOC001 missing or blank docstring
+./tests/test_cli.py:48: test_metadata_only_flag: DOC002 summary has 7 words/43 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:70: test_json_output: DOC002 summary has 4 words/21 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:195: test_json_column_warning_is_on_stderr: DOC002 summary has 6 words/51 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:272: test_glob_pattern: DOC002 summary has 6 words/34 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:339: test_details_flag: DOC002 summary has 7 words/47 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:389: test_pyarrow_25_bloom_filter_and_page_indexes: DOC002 summary has 7 words/36 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:440: test_format_size_bytes: DOC002 summary has 5 words/33 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:447: test_format_size_kilobytes: DOC002 summary has 5 words/37 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:453: test_format_size_megabytes: DOC002 summary has 5 words/37 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:459: test_format_size_gigabytes: DOC002 summary has 5 words/37 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:464: test_format_size_terabytes: DOC002 summary has 5 words/37 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:469: test_column_info_model: DOC002 summary has 6 words/33 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:511: test_output_json_function: DOC002 summary has 5 words/35 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_cli.py:576: test_nonexistent_file: DOC002 summary has 6 words/37 characters; requires >= 8 words and >= 40 non-whitespace characters
+./tests/test_workflows.py:1: <module>: DOC001 missing or blank docstring
+Documentation: 14 files, 116 functions, 41 violations.
+Running pytest on .
+........................................................................ [ 57%]
+......................................................                   [100%]
+126 passed in 4.26s
+
+Quality summary:
+  complexity: FAIL (exit 1)
+  ruff: FAIL (exit 1)
+  types: FAIL (exit 1)
+  docstrings: FAIL (exit 1)
+  tests: PASS (exit 0)
+4/5 gates failed.

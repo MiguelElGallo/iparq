@@ -1,0 +1,13 @@
+"""Provide a deliberately failing example for a focused quality gate."""
+
+
+def cognitive_boundary(values: list[int]) -> int:
+    """Check nested input conditions before computing the final matching total."""
+    total = 0
+    if values:
+        if len(values) > 1:
+            if values[0] > 0:
+                if values[1] > 0:
+                    if sum(values) > 5:
+                        total = sum(values)
+    return total

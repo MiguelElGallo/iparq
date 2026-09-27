@@ -1,6 +1,6 @@
 [project]
 name = "iparq"
-version = "0.8.1"
+version = "0.8.2"
 description = "Inspect Parquet metadata, encodings, compression, indexes, and Bloom filters"
 readme = "README.md"
 authors = [
@@ -35,9 +35,13 @@ test = [
     "pytest-cov>=7.1.0",
 ]
 checks = [
+    "complexipy==8.0.1",
+    "interrogate==1.7.0",
     "mypy>=2.3.1",
-    "ruff>=0.16.6",
-    "ty>=0.0.78",
+    "pyrefly==1.3.1",
+    "ruff==0.16.9",
+    "tomli>=2.0.1",
+    "ty==0.0.84",
 ]
 
 [project.scripts]
@@ -62,9 +66,63 @@ testpaths = [
     "tests",
 ]
 
+[tool.pythonprs]
+# All code gates use this inventory, including tests and hidden directories.
+exclude-dirs = [".git", ".venv", "venv", "__pycache__", ".pytest_cache", ".ruff_cache", ".complexipy_cache", ".mypy_cache", ".tox", "node_modules", "build", "dist"]
+docstring-min-words = 8
+docstring-min-characters = 40
+
+[tool.complexipy]
+max-complexity-allowed = 15
+snapshot-ignore = true
+snapshot-create = false
+ignore-complexity = false
+no-ignore = true
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
 [tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "C901", "ANN001", "ANN002", "ANN003", "ANN201", "ANN202", "ANN204", "ANN205", "ANN206"]
 # Typer declares CLI metadata through function-call defaults by design.
 ignore = ["B008"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.pyrefly]
+search-path = ["src", "."]
+project-includes = ["**/*.py"]
+project-excludes = []
+disable-project-excludes-heuristics = true
+use-ignore-files = false
+python-version = "3.10"
+preset = "default"
+check-unannotated-defs = true
+infer-return-types = "checked"
+ignore-errors-in-generated-code = false
+enabled-ignores = []
+
+[tool.pyrefly.errors]
+implicit-any-parameter = "error"
+unannotated-return = "error"
+
+[tool.interrogate]
+fail-under = 100
+style = "sphinx"
+ignore-init-method = false
+ignore-init-module = false
+ignore-magic = false
+ignore-module = false
+ignore-nested-functions = false
+ignore-nested-classes = false
+ignore-overloaded-functions = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-setters = false
+ignore-semiprivate = false
+verbose = 1
 
 [[tool.mypy.overrides]]
 module = ["pyarrow.*"]

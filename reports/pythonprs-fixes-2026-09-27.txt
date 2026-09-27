@@ -1,0 +1,394 @@
+Python 3.13.15
+Exit status: 0
+
+Running complexipy on .
+examples/good.py normalize_status 0
+examples/good.py total_positive_values 2
+scripts/check_docstrings.py _raise_walk_error 0
+scripts/check_docstrings.py summary_counts 1
+scripts/check_docstrings.py check_docstrings 2
+scripts/check_docstrings.py check_file 5
+scripts/check_docstrings.py _definition_issue 6
+scripts/check_docstrings.py load_policy 6
+scripts/check_docstrings.py discover_python_files 10
+scripts/quality.py run_gate 2
+scripts/quality.py _run 3
+scripts/quality.py gate_commands 4
+scripts/quality.py main 4
+scripts/quality.py _complexity_command 6
+src/iparq/source.py add_terminal_safe_row 0
+src/iparq/source.py optional_column_metadata 0
+src/iparq/source.py optional_column_metadata 0
+src/iparq/source.py output_json 0
+src/iparq/source.py _build_column_chunk_locations_table 1
+src/iparq/source.py _metadata_display_value 1
+src/iparq/source.py _print_file_heading 1
+src/iparq/source.py _update_column_statistics 1
+src/iparq/source.py optional_column_metadata 1
+src/iparq/source.py optional_positive 1
+src/iparq/source.py print_parquet_metadata 1
+src/iparq/source.py print_storage_details_table 1
+src/iparq/source.py _build_schema_details_table 2
+src/iparq/source.py _expand_unique_files 2
+src/iparq/source.py _legacy_index_indicator 2
+src/iparq/source.py _print_rich_inspection 2
+src/iparq/source.py build_meta_model 2
+src/iparq/source.py print_column_info_table 2
+src/iparq/source.py _build_encoding_details_table 3
+src/iparq/source.py _column_size_values 3
+src/iparq/source.py collect_row_group_info 3
+src/iparq/source.py inspect_single_file 3
+src/iparq/source.py read_parquet_metadata 3
+src/iparq/source.py terminal_safe_text 3
+src/iparq/source.py _build_row_group_details_table 4
+src/iparq/source.py _emit_json_results 4
+src/iparq/source.py format_size 4
+src/iparq/source.py _column_row_values 6
+src/iparq/source.py _filter_columns 6
+src/iparq/source.py build_json_result 6
+src/iparq/source.py _apply_column_statistics 7
+src/iparq/source.py _build_index_statistics_details_table 9
+src/iparq/source.py print_compression_types 9
+src/iparq/source.py print_bloom_filter_info 11
+src/iparq/source.py print_min_max_statistics 11
+src/iparq/source.py inspect 13
+tests/test_agent_plugin.py project_version 0
+tests/test_agent_plugin.py test_codex_plugin_manifest_matches_release 0
+tests/test_agent_plugin.py test_open_agent_plugin_manifest_is_portable_and_versioned 0
+tests/test_agent_plugin.py test_plugin_does_not_bundle_an_mcp_server 1
+tests/test_agent_plugin.py test_plugin_skill_matches_canonical_skill 1
+tests/test_agent_plugin.py test_skill_documents_semantically_subtle_fields 1
+tests/test_agent_plugin.py test_codex_marketplace_points_to_plugin 2
+tests/test_agent_plugin.py test_copilot_marketplace_points_to_plugin 2
+tests/test_agent_plugin.py test_skill_documents_tri_state_boolean_fields 2
+tests/test_agent_plugin.py test_skill_explains_that_statistics_num_values_excludes_nulls 3
+tests/test_agent_plugin.py tri_state_boolean_fields 4
+tests/test_ai_catalog.py test_catalog_site_has_agent_and_search_discovery_files 0
+tests/test_ai_catalog.py test_ai_catalog_entries_are_discoverable 1
+tests/test_ai_catalog.py test_cataloged_skill_exists_and_has_matching_identity 2
+tests/test_ai_catalog.py test_wheel_bundles_the_cataloged_skill 4
+tests/test_ai_catalog.py test_sitemap_uses_canonical_https_urls 6
+tests/test_cli.py test_column_filter 0
+tests/test_cli.py test_column_filter_no_match 0
+tests/test_cli.py test_column_info_model 0
+tests/test_cli.py test_column_info_model_defaults 0
+tests/test_cli.py test_default_command 0
+tests/test_cli.py test_details_flag 0
+tests/test_cli.py test_error_handling_with_multiple_files 0
+tests/test_cli.py test_format_size_bytes 0
+tests/test_cli.py test_format_size_gigabytes 0
+tests/test_cli.py test_format_size_kilobytes 0
+tests/test_cli.py test_format_size_megabytes 0
+tests/test_cli.py test_format_size_terabytes 0
+tests/test_cli.py test_glob_pattern 0
+tests/test_cli.py test_json_column_warning_is_on_stderr 0
+tests/test_cli.py test_json_preserves_rich_markup_like_values 0
+tests/test_cli.py test_legacy_bloom_filter_without_length_is_detected 0
+tests/test_cli.py test_metadata_only_flag 0
+tests/test_cli.py test_metadata_only_json_omits_column_details 0
+tests/test_cli.py test_multiple_different_files 0
+tests/test_cli.py test_multiple_files 0
+tests/test_cli.py test_nonexistent_file 0
+tests/test_cli.py test_output_json_function 0
+tests/test_cli.py test_rich_output_neutralizes_untrusted_terminal_sequences 0
+tests/test_cli.py test_row_group_sizes_and_sort_order 0
+tests/test_cli.py test_single_file_no_header 0
+tests/test_cli.py test_sizes_flag 0
+tests/test_cli.py test_json_output 1
+tests/test_cli.py test_pyarrow_25_bloom_filter_and_page_indexes 1
+tests/test_cli.py test_sizes_flag_with_json 1
+tests/test_cli.py test_multiple_file_json_is_one_document 2
+tests/test_cli.py test_parquet_info 3
+tests/test_docstrings.py _policy 0
+tests/test_docstrings.py _write_source 0
+tests/test_docstrings.py test_discovery_requires_existing_nonempty_repository 0
+tests/test_docstrings.py test_every_function_kind_requires_its_own_documentation 0
+tests/test_docstrings.py test_inherited_method_documentation_is_insufficient 0
+tests/test_docstrings.py test_summary_counts_only_first_paragraph 0
+tests/test_docstrings.py test_unreadable_source_reports_inspection_error 0
+tests/test_docstrings.py test_discovery_excludes_generated_and_environment_directories 1
+tests/test_docstrings.py test_exact_summary_minimums_are_enforced 1
+tests/test_docstrings.py test_module_and_class_docstrings_cannot_be_omitted 1
+tests/test_docstrings.py test_single_missing_function_never_rounds_to_success 1
+tests/test_docstrings.py test_invalid_or_missing_source_fails_closed 3
+tests/test_metadata_types.py UnsupportedLegacyMetadata::__getattr__ 0
+tests/test_metadata_types.py UnsupportedLegacyMetadata::__init__ 0
+tests/test_metadata_types.py test_metadata_reader_returns_native_metadata_and_string_codecs 0
+tests/test_metadata_types.py test_optional_legacy_index_flags_preserve_boolean_states 0
+tests/test_metadata_types.py test_unexpected_native_metadata_failures_are_not_suppressed 0
+tests/test_metadata_types.py test_unsupported_optional_metadata_remains_unknown 0
+tests/test_metadata_types.py test_optional_legacy_offsets_preserve_zero_and_missing_values 1
+tests/test_quality_gates.py _output 0
+tests/test_quality_gates.py _project 0
+tests/test_quality_gates.py _run_gate 0
+tests/test_quality_gates.py test_all_gates_report_failures_without_stopping_early 0
+tests/test_quality_gates.py test_alternate_complexity_configuration_is_rejected 0
+tests/test_quality_gates.py test_cognitive_complexity_boundary 0
+tests/test_quality_gates.py test_complexity_rejects_partial_scan_modes 0
+tests/test_quality_gates.py test_complexity_uses_reviewed_configuration_threshold 0
+tests/test_quality_gates.py test_documentation_examples_block_changes 0
+tests/test_quality_gates.py test_empty_repository_cannot_silently_pass 0
+tests/test_quality_gates.py test_gate_discovers_python_outside_existing_source_directories 0
+tests/test_quality_gates.py test_good_example_passes_every_gate 0
+tests/test_quality_gates.py test_ignore_file_cannot_hide_repository_source 0
+tests/test_quality_gates.py test_missing_quality_executable_is_a_configuration_failure 0
+tests/test_quality_gates.py test_ruff_requires_function_annotations 0
+tests/test_quality_gates.py test_terminated_quality_tool_cannot_report_success 0
+tests/test_quality_gates.py test_important_type_errors_block_changes 1
+tests/test_quality_gates.py test_inline_suppression_cannot_bypass_gate 1
+tests/test_quality_gates.py test_mccabe_complexity_boundary 1
+tests/test_rendering_regressions.py _capture_tables 0
+tests/test_rendering_regressions.py test_column_summary_preserves_empty_bounds_and_zero_size_conventions 0
+tests/test_rendering_regressions.py test_rich_sort_order_preserves_direction_null_order_and_terminal_safety 0
+tests/test_rendering_regressions.py test_statistics_update_only_first_matching_model_column 0
+tests/test_rendering_regressions.py test_unmatched_glob_is_reported_as_literal_input 0
+tests/test_rendering_regressions.py test_mixed_json_results_retain_array_and_failure_exit 1
+tests/test_rendering_regressions.py test_overlapping_globs_preserve_first_encounter_order 1
+tests/test_rendering_regressions.py test_storage_tables_preserve_zero_values_and_legacy_index_states 1
+tests/test_rendering_regressions.py test_all_failed_json_inputs_keep_existing_empty_output_conventions 2
+tests/test_rendering_regressions.py test_statistics_preserve_nulls_and_bounds_across_row_groups 3
+tests/test_rendering_regressions.py _rendered_rows 4
+tests/test_workflows.py test_pypi_publisher_is_pinned_to_a_commit 0
+tests/test_workflows.py test_python_matrix_uses_the_configured_interpreter 0
+Running ruff on .
+All checks passed!
+Running ruff on .
+16 files already formatted
+Running pyrefly on .
+ INFO 0 errors (1 warning not shown)
+Running interrogate on .
+================= Coverage for ./ =================
+----------------------------------- Summary ------------------------------------
+| Name                                     |  Total |  Miss |  Cover |  Cover% |
+|------------------------------------------|--------|-------|--------|---------|
+| examples/good.py                         |      3 |     0 |      3 |    100% |
+| scripts/__init__.py                      |      1 |     0 |      1 |    100% |
+| scripts/check_docstrings.py              |      9 |     0 |      9 |    100% |
+| scripts/quality.py                       |      6 |     0 |      6 |    100% |
+| src/iparq/__init__.py                    |      1 |     0 |      1 |    100% |
+| src/iparq/source.py                      |     44 |     0 |     44 |    100% |
+| tests/__init__.py                        |      1 |     0 |      1 |    100% |
+| tests/conftest.py                        |      1 |     0 |      1 |    100% |
+| tests/test_agent_plugin.py               |     12 |     0 |     12 |    100% |
+| tests/test_ai_catalog.py                 |      6 |     0 |      6 |    100% |
+| tests/test_cli.py                        |     32 |     0 |     32 |    100% |
+| tests/test_docstrings.py                 |     14 |     0 |     14 |    100% |
+| tests/test_metadata_types.py             |      9 |     0 |      9 |    100% |
+| tests/test_quality_gates.py              |     23 |     0 |     23 |    100% |
+| tests/test_rendering_regressions.py      |     13 |     0 |     13 |    100% |
+| tests/test_workflows.py                  |      3 |     0 |      3 |    100% |
+|------------------------------------------|--------|-------|--------|---------|
+| TOTAL                                    |    178 |     0 |    178 |  100.0% |
+--------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+Documentation: 16 files, 153 functions, 0 violations.
+Running pytest on .
+........................................................................ [ 48%]
+........................................................................ [ 96%]
+......                                                                   [100%]
+150 passed in 4.55s
+
+Quality summary:
+  complexity: PASS (exit 0)
+  ruff: PASS (exit 0)
+  types: PASS (exit 0)
+  docstrings: PASS (exit 0)
+  tests: PASS (exit 0)
+0/5 gates failed.
+
+
+Python 3.10.21
+Exit status: 0
+
+Running complexipy on .
+examples/good.py normalize_status 0
+examples/good.py total_positive_values 2
+scripts/check_docstrings.py _raise_walk_error 0
+scripts/check_docstrings.py summary_counts 1
+scripts/check_docstrings.py check_docstrings 2
+scripts/check_docstrings.py check_file 5
+scripts/check_docstrings.py _definition_issue 6
+scripts/check_docstrings.py load_policy 6
+scripts/check_docstrings.py discover_python_files 10
+scripts/quality.py run_gate 2
+scripts/quality.py _run 3
+scripts/quality.py gate_commands 4
+scripts/quality.py main 4
+scripts/quality.py _complexity_command 6
+src/iparq/source.py add_terminal_safe_row 0
+src/iparq/source.py optional_column_metadata 0
+src/iparq/source.py optional_column_metadata 0
+src/iparq/source.py output_json 0
+src/iparq/source.py _build_column_chunk_locations_table 1
+src/iparq/source.py _metadata_display_value 1
+src/iparq/source.py _print_file_heading 1
+src/iparq/source.py _update_column_statistics 1
+src/iparq/source.py optional_column_metadata 1
+src/iparq/source.py optional_positive 1
+src/iparq/source.py print_parquet_metadata 1
+src/iparq/source.py print_storage_details_table 1
+src/iparq/source.py _build_schema_details_table 2
+src/iparq/source.py _expand_unique_files 2
+src/iparq/source.py _legacy_index_indicator 2
+src/iparq/source.py _print_rich_inspection 2
+src/iparq/source.py build_meta_model 2
+src/iparq/source.py print_column_info_table 2
+src/iparq/source.py _build_encoding_details_table 3
+src/iparq/source.py _column_size_values 3
+src/iparq/source.py collect_row_group_info 3
+src/iparq/source.py inspect_single_file 3
+src/iparq/source.py read_parquet_metadata 3
+src/iparq/source.py terminal_safe_text 3
+src/iparq/source.py _build_row_group_details_table 4
+src/iparq/source.py _emit_json_results 4
+src/iparq/source.py format_size 4
+src/iparq/source.py _column_row_values 6
+src/iparq/source.py _filter_columns 6
+src/iparq/source.py build_json_result 6
+src/iparq/source.py _apply_column_statistics 7
+src/iparq/source.py _build_index_statistics_details_table 9
+src/iparq/source.py print_compression_types 9
+src/iparq/source.py print_bloom_filter_info 11
+src/iparq/source.py print_min_max_statistics 11
+src/iparq/source.py inspect 13
+tests/test_agent_plugin.py project_version 0
+tests/test_agent_plugin.py test_codex_plugin_manifest_matches_release 0
+tests/test_agent_plugin.py test_open_agent_plugin_manifest_is_portable_and_versioned 0
+tests/test_agent_plugin.py test_plugin_does_not_bundle_an_mcp_server 1
+tests/test_agent_plugin.py test_plugin_skill_matches_canonical_skill 1
+tests/test_agent_plugin.py test_skill_documents_semantically_subtle_fields 1
+tests/test_agent_plugin.py test_codex_marketplace_points_to_plugin 2
+tests/test_agent_plugin.py test_copilot_marketplace_points_to_plugin 2
+tests/test_agent_plugin.py test_skill_documents_tri_state_boolean_fields 2
+tests/test_agent_plugin.py test_skill_explains_that_statistics_num_values_excludes_nulls 3
+tests/test_agent_plugin.py tri_state_boolean_fields 4
+tests/test_ai_catalog.py test_catalog_site_has_agent_and_search_discovery_files 0
+tests/test_ai_catalog.py test_ai_catalog_entries_are_discoverable 1
+tests/test_ai_catalog.py test_cataloged_skill_exists_and_has_matching_identity 2
+tests/test_ai_catalog.py test_wheel_bundles_the_cataloged_skill 4
+tests/test_ai_catalog.py test_sitemap_uses_canonical_https_urls 6
+tests/test_cli.py test_column_filter 0
+tests/test_cli.py test_column_filter_no_match 0
+tests/test_cli.py test_column_info_model 0
+tests/test_cli.py test_column_info_model_defaults 0
+tests/test_cli.py test_default_command 0
+tests/test_cli.py test_details_flag 0
+tests/test_cli.py test_error_handling_with_multiple_files 0
+tests/test_cli.py test_format_size_bytes 0
+tests/test_cli.py test_format_size_gigabytes 0
+tests/test_cli.py test_format_size_kilobytes 0
+tests/test_cli.py test_format_size_megabytes 0
+tests/test_cli.py test_format_size_terabytes 0
+tests/test_cli.py test_glob_pattern 0
+tests/test_cli.py test_json_column_warning_is_on_stderr 0
+tests/test_cli.py test_json_preserves_rich_markup_like_values 0
+tests/test_cli.py test_legacy_bloom_filter_without_length_is_detected 0
+tests/test_cli.py test_metadata_only_flag 0
+tests/test_cli.py test_metadata_only_json_omits_column_details 0
+tests/test_cli.py test_multiple_different_files 0
+tests/test_cli.py test_multiple_files 0
+tests/test_cli.py test_nonexistent_file 0
+tests/test_cli.py test_output_json_function 0
+tests/test_cli.py test_rich_output_neutralizes_untrusted_terminal_sequences 0
+tests/test_cli.py test_row_group_sizes_and_sort_order 0
+tests/test_cli.py test_single_file_no_header 0
+tests/test_cli.py test_sizes_flag 0
+tests/test_cli.py test_json_output 1
+tests/test_cli.py test_pyarrow_25_bloom_filter_and_page_indexes 1
+tests/test_cli.py test_sizes_flag_with_json 1
+tests/test_cli.py test_multiple_file_json_is_one_document 2
+tests/test_cli.py test_parquet_info 3
+tests/test_docstrings.py _policy 0
+tests/test_docstrings.py _write_source 0
+tests/test_docstrings.py test_discovery_requires_existing_nonempty_repository 0
+tests/test_docstrings.py test_every_function_kind_requires_its_own_documentation 0
+tests/test_docstrings.py test_inherited_method_documentation_is_insufficient 0
+tests/test_docstrings.py test_summary_counts_only_first_paragraph 0
+tests/test_docstrings.py test_unreadable_source_reports_inspection_error 0
+tests/test_docstrings.py test_discovery_excludes_generated_and_environment_directories 1
+tests/test_docstrings.py test_exact_summary_minimums_are_enforced 1
+tests/test_docstrings.py test_module_and_class_docstrings_cannot_be_omitted 1
+tests/test_docstrings.py test_single_missing_function_never_rounds_to_success 1
+tests/test_docstrings.py test_invalid_or_missing_source_fails_closed 3
+tests/test_metadata_types.py UnsupportedLegacyMetadata::__getattr__ 0
+tests/test_metadata_types.py UnsupportedLegacyMetadata::__init__ 0
+tests/test_metadata_types.py test_metadata_reader_returns_native_metadata_and_string_codecs 0
+tests/test_metadata_types.py test_optional_legacy_index_flags_preserve_boolean_states 0
+tests/test_metadata_types.py test_unexpected_native_metadata_failures_are_not_suppressed 0
+tests/test_metadata_types.py test_unsupported_optional_metadata_remains_unknown 0
+tests/test_metadata_types.py test_optional_legacy_offsets_preserve_zero_and_missing_values 1
+tests/test_quality_gates.py _output 0
+tests/test_quality_gates.py _project 0
+tests/test_quality_gates.py _run_gate 0
+tests/test_quality_gates.py test_all_gates_report_failures_without_stopping_early 0
+tests/test_quality_gates.py test_alternate_complexity_configuration_is_rejected 0
+tests/test_quality_gates.py test_cognitive_complexity_boundary 0
+tests/test_quality_gates.py test_complexity_rejects_partial_scan_modes 0
+tests/test_quality_gates.py test_complexity_uses_reviewed_configuration_threshold 0
+tests/test_quality_gates.py test_documentation_examples_block_changes 0
+tests/test_quality_gates.py test_empty_repository_cannot_silently_pass 0
+tests/test_quality_gates.py test_gate_discovers_python_outside_existing_source_directories 0
+tests/test_quality_gates.py test_good_example_passes_every_gate 0
+tests/test_quality_gates.py test_ignore_file_cannot_hide_repository_source 0
+tests/test_quality_gates.py test_missing_quality_executable_is_a_configuration_failure 0
+tests/test_quality_gates.py test_ruff_requires_function_annotations 0
+tests/test_quality_gates.py test_terminated_quality_tool_cannot_report_success 0
+tests/test_quality_gates.py test_important_type_errors_block_changes 1
+tests/test_quality_gates.py test_inline_suppression_cannot_bypass_gate 1
+tests/test_quality_gates.py test_mccabe_complexity_boundary 1
+tests/test_rendering_regressions.py _capture_tables 0
+tests/test_rendering_regressions.py test_column_summary_preserves_empty_bounds_and_zero_size_conventions 0
+tests/test_rendering_regressions.py test_rich_sort_order_preserves_direction_null_order_and_terminal_safety 0
+tests/test_rendering_regressions.py test_statistics_update_only_first_matching_model_column 0
+tests/test_rendering_regressions.py test_unmatched_glob_is_reported_as_literal_input 0
+tests/test_rendering_regressions.py test_mixed_json_results_retain_array_and_failure_exit 1
+tests/test_rendering_regressions.py test_overlapping_globs_preserve_first_encounter_order 1
+tests/test_rendering_regressions.py test_storage_tables_preserve_zero_values_and_legacy_index_states 1
+tests/test_rendering_regressions.py test_all_failed_json_inputs_keep_existing_empty_output_conventions 2
+tests/test_rendering_regressions.py test_statistics_preserve_nulls_and_bounds_across_row_groups 3
+tests/test_rendering_regressions.py _rendered_rows 4
+tests/test_workflows.py test_pypi_publisher_is_pinned_to_a_commit 0
+tests/test_workflows.py test_python_matrix_uses_the_configured_interpreter 0
+Running ruff on .
+All checks passed!
+Running ruff on .
+16 files already formatted
+Running pyrefly on .
+ INFO 0 errors (1 warning not shown)
+Running interrogate on .
+================= Coverage for ./ =================
+----------------------------------- Summary ------------------------------------
+| Name                                     |  Total |  Miss |  Cover |  Cover% |
+|------------------------------------------|--------|-------|--------|---------|
+| examples/good.py                         |      3 |     0 |      3 |    100% |
+| scripts/__init__.py                      |      1 |     0 |      1 |    100% |
+| scripts/check_docstrings.py              |      9 |     0 |      9 |    100% |
+| scripts/quality.py                       |      6 |     0 |      6 |    100% |
+| src/iparq/__init__.py                    |      1 |     0 |      1 |    100% |
+| src/iparq/source.py                      |     44 |     0 |     44 |    100% |
+| tests/__init__.py                        |      1 |     0 |      1 |    100% |
+| tests/conftest.py                        |      1 |     0 |      1 |    100% |
+| tests/test_agent_plugin.py               |     12 |     0 |     12 |    100% |
+| tests/test_ai_catalog.py                 |      6 |     0 |      6 |    100% |
+| tests/test_cli.py                        |     32 |     0 |     32 |    100% |
+| tests/test_docstrings.py                 |     14 |     0 |     14 |    100% |
+| tests/test_metadata_types.py             |      9 |     0 |      9 |    100% |
+| tests/test_quality_gates.py              |     23 |     0 |     23 |    100% |
+| tests/test_rendering_regressions.py      |     13 |     0 |     13 |    100% |
+| tests/test_workflows.py                  |      3 |     0 |      3 |    100% |
+|------------------------------------------|--------|-------|--------|---------|
+| TOTAL                                    |    178 |     0 |    178 |  100.0% |
+--------------- RESULT: PASSED (minimum: 100.0%, actual: 100.0%) ---------------
+Documentation: 16 files, 153 functions, 0 violations.
+Running pytest on .
+........................................................................ [ 48%]
+........................................................................ [ 96%]
+......                                                                   [100%]
+150 passed in 4.53s
+
+Quality summary:
+  complexity: PASS (exit 0)
+  ruff: PASS (exit 0)
+  types: PASS (exit 0)
+  docstrings: PASS (exit 0)
+  tests: PASS (exit 0)
+0/5 gates failed.

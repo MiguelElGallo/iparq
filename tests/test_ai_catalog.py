@@ -1,3 +1,5 @@
+"""Verify inspector discovery metadata, packaged skill content, and catalog resources."""
+
 import json
 import re
 import subprocess
@@ -14,6 +16,7 @@ URN_PATTERN = re.compile(r"^urn:air:[a-zA-Z0-9.-]+(:[a-zA-Z0-9._-]+)+$")
 
 
 def test_ai_catalog_entries_are_discoverable() -> None:
+    """Check catalog identities, entry destinations, and representative query counts for discovery."""
     catalog = json.loads(CATALOG_PATH.read_text())
 
     assert catalog["specVersion"] == "1.0"
@@ -32,6 +35,7 @@ def test_ai_catalog_entries_are_discoverable() -> None:
 
 
 def test_cataloged_skill_exists_and_has_matching_identity() -> None:
+    """Check cataloged skill identity and release metadata against the project files."""
     catalog = json.loads(CATALOG_PATH.read_text())
     entry = next(
         entry for entry in catalog["entries"] if entry["identifier"] == SKILL_IDENTIFIER
@@ -61,6 +65,7 @@ def test_cataloged_skill_exists_and_has_matching_identity() -> None:
 
 
 def test_wheel_bundles_the_cataloged_skill(tmp_path: Path) -> None:
+    """Build the wheel and verify it contains the canonical inspector skill files."""
     catalog = json.loads(CATALOG_PATH.read_text())
     entry = next(
         entry for entry in catalog["entries"] if entry["identifier"] == SKILL_IDENTIFIER
@@ -96,6 +101,7 @@ def test_wheel_bundles_the_cataloged_skill(tmp_path: Path) -> None:
 
 
 def test_catalog_site_has_agent_and_search_discovery_files() -> None:
+    """Require catalog pages to expose agent discovery, usage, pricing, and search resources."""
     homepage = (SITE_PATH / "index.html").read_text()
     llms_txt = (SITE_PATH / "llms.txt").read_text()
     agent_overview = (SITE_PATH / "index.md").read_text()
@@ -112,6 +118,7 @@ def test_catalog_site_has_agent_and_search_discovery_files() -> None:
 
 
 def test_sitemap_uses_canonical_https_urls() -> None:
+    """Require sitemap locations to use the canonical HTTPS host and discovery paths."""
     sitemap = ET.parse(SITE_PATH / "sitemap.xml")
     namespace = {"sitemap": "http://www.sitemaps.org/schemas/sitemap/0.9"}
     locations = [

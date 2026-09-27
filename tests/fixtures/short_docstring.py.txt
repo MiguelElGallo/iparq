@@ -1,0 +1,13 @@
+"""Provide a deliberately failing example for a focused quality gate."""
+
+
+def increment(value: int) -> int:
+    """Increment.
+
+    Args:
+        value: The supplied integer input used for this increment operation.
+
+    Returns:
+        The supplied integer input plus one additional unit of increment.
+    """
+    return value + 1

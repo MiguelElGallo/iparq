@@ -1,0 +1,6 @@
+"""Provide a deliberately failing example for a focused quality gate."""
+
+
+def identity(value):
+    """Return the supplied input unchanged while demonstrating absent type annotations."""
+    return value

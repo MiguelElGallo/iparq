@@ -1,0 +1,5 @@
+"""Provide a deliberately failing example for a focused quality gate."""
+
+
+def increment(value: int) -> int:
+    return value + 1

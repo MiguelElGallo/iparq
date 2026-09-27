@@ -1,4 +1,4 @@
-# This workflow will upload a Python Package to PyPI when a release is created
+# Dispatch this workflow at a version-matched release tag to publish to PyPI.
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
 
 # This workflow uses actions that are not certified by GitHub.
@@ -34,39 +34,34 @@ jobs:
       - name: Sync locked dependencies
         run: uv sync --all-extras --locked
 
-      - name: Run linting
-        run: uv run ruff check .
+      - name: Verify release tag and package versions
+        env:
+          RELEASE_REF: ${{ github.ref }}
+        run: |
+          uv run --no-sync python - <<'PY'
+          import os
+          from importlib.metadata import version
+          from iparq import __version__
 
-      - name: Check formatting
-        run: uv run ruff format --check .
+          package_version = version("iparq")
+          expected_ref = f"refs/tags/v{package_version}"
+          assert os.environ["RELEASE_REF"] == expected_ref, (
+              f"Dispatch at {expected_ref}, got {os.environ['RELEASE_REF']}"
+          )
+          assert __version__ == package_version, "Package versions disagree"
+          print(f"Validated {expected_ref}")
+          PY
+
+      - name: Run all Python quality gates
+        env:
+          PYTEST_ADDOPTS: --cov=src/iparq --cov-report=html
+        run: uv run --no-sync python -m scripts.quality all
 
       - name: Run type checking
-        run: uv run mypy src/iparq --config-file=pyproject.toml
+        run: uv run --no-sync mypy src/iparq --config-file=pyproject.toml
 
       - name: Run ty
-        run: uv run ty check
-
-      - name: Run tests
-        run: uv run pytest -v --cov=src/iparq --cov-report=html
-
-      - name: Test package build
-        run: |
-          uv build
-
-      - name: Test package installation in clean environment
-        run: |
-          # Test that the built package can be installed and imported
-          python -m venv test_install_env
-          source test_install_env/bin/activate
-          python -m pip install dist/*.whl
-          python -c "import iparq; print(f'Successfully imported iparq version {iparq.__version__}')"
-          iparq --help
-          iparq inspect tests/dummy.parquet --format json | python -m json.tool > /dev/null
-          if iparq inspect does-not-exist.parquet; then
-            echo "Missing files must return a non-zero exit code"
-            exit 1
-          fi
-          deactivate
+        run: uv run --no-sync ty check
 
       - name: Upload test results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -100,6 +95,33 @@ jobs:
       - name: Build release distributions
         run: |
           uv build
+
+      - name: Test the built wheel in a clean environment
+        run: |
+          python -m venv "$RUNNER_TEMP/iparq-release-smoke"
+          source "$RUNNER_TEMP/iparq-release-smoke/bin/activate"
+          python -m pip install "$GITHUB_WORKSPACE"/dist/*.whl
+          cd "$RUNNER_TEMP"
+          python - <<'PY'
+          import os
+          from importlib.metadata import version
+          from pathlib import Path
+          import iparq
+
+          assert Path(iparq.__file__).resolve().is_relative_to(
+              Path(os.environ["VIRTUAL_ENV"]).resolve()
+          ), "Smoke test imported the source checkout"
+          assert iparq.__version__ == version("iparq")
+          assert os.environ["GITHUB_REF"] == f"refs/tags/v{iparq.__version__}"
+          print(f"Installed iParq {iparq.__version__} from the release wheel")
+          PY
+          iparq --help
+          iparq inspect "$GITHUB_WORKSPACE/tests/dummy.parquet" --format json | python -m json.tool > /dev/null
+          if iparq inspect "$RUNNER_TEMP/does-not-exist.parquet"; then
+            echo "Missing files must return a non-zero exit code"
+            exit 1
+          fi
+          deactivate
 
       - name: Upload distributions
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
