@@ -1,11 +1,11 @@
 ---
 name: iparq-parquet-inspector
-description: Inspect Parquet file metadata with the iParq CLI, including compression, encodings, physical and logical types, row groups, sort order, statistics, geospatial statistics, dictionary pages, page indexes, page locations, Bloom filters, and storage sizes. Use when an agent needs to explain how one or more .parquet files were written, compare their storage-level features, diagnose missing Parquet optimizations, or obtain machine-readable Parquet metadata without reading the row data.
+description: Inspect local Parquet and Vortex files with the iParq CLI. Use when an agent needs machine-readable Parquet compression, encodings, types, row groups, statistics, indexes, and Bloom filters, or Vortex schema, row counts, scan splits, and file sizes without querying row data.
 ---
 
-# iParq Parquet Inspector
+# iParq Parquet and Vortex Inspector
 
-Inspect Parquet storage metadata without querying the file's row data. Prefer JSON output so results remain machine-readable and diagnostics stay separate on stderr.
+Inspect storage metadata without querying row data. Prefer JSON output so results remain machine-readable and diagnostics stay separate on stderr.
 
 ## Run an inspection
 
@@ -23,9 +23,19 @@ iparq inspect FILE.parquet --format json --details --sizes
 
 Pass multiple paths or shell-expanded glob patterns to compare files. iParq emits one JSON object for a single file and an array with a `file` field for multiple files.
 
+## Inspect Vortex files
+
+Use Python 3.11 or newer with the Vortex extra. A single invocation can inspect both formats.
+
+```sh
+uvx --from 'iparq[vortex]' iparq inspect FILE.vortex FILE.parquet --format json
+```
+
+For results with `metadata.file_format` equal to `vortex`, read the native dtype and nullability from each entry in `columns`. A scalar or list root appears as one column with a null name. Scan splits use inclusive `start_row` and exclusive `stop_row`. The file and postscript sizes are byte counts. Use `--metadata-only` to omit columns and splits, or `--column NAME` for one top-level field.
+
 ## Select the minimum useful detail
 
-- Use `--metadata-only` for creator, row count, row groups, Parquet version, and serialized metadata size.
+- For Parquet, use `--metadata-only` for creator, row count, row groups, format version, and serialized metadata size.
 - Use `--column NAME` to restrict column-level output.
 - Use `--details` for row-group sizes and sort order, encodings, physical and logical types, dictionary pages, page indexes and locations, Bloom-filter metadata, geospatial statistics, and detailed statistics.
 - Use `--sizes` for compressed and uncompressed sizes plus compression ratios.

@@ -34,7 +34,7 @@ jobs:
           path: .ard-spec
 
       - name: Install strict schema validator
-        run: python -m pip install --disable-pip-version-check jsonschema==4.25.1
+        run: python -m pip install --disable-pip-version-check jsonschema==4.26.0
 
       - name: Validate ARD manifest
         run: python .ard-spec/conformance/bin/conformance-test manifest .well-known/ai-catalog.json
@@ -63,4 +63,4 @@ jobs:
     steps:
       - name: Deploy catalog to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

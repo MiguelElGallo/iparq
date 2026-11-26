@@ -8,12 +8,13 @@
   "entries": [
     {
       "identifier": "urn:air:iparq.dev:skill:parquet-inspector",
-      "displayName": "iParq Parquet Inspector",
+      "displayName": "iParq Parquet and Vortex Inspector",
       "type": "text/markdown; profile=\"urn:air:agent-skills\"",
       "url": "https://raw.githubusercontent.com/MiguelElGallo/iparq/main/.agents/skills/iparq-parquet-inspector/SKILL.md",
-      "description": "Inspect Parquet metadata, compression, encodings, physical and logical types, row groups, statistics, geospatial statistics, indexes, dictionary pages, Bloom filters, and storage sizes through a read-only CLI with machine-readable JSON output.",
+      "description": "Inspect Parquet compression, encodings and indexes, and Vortex schemas, scan splits and file sizes locally with iParq.",
       "tags": [
         "parquet",
+        "vortex",
         "metadata",
         "compression",
         "encoding",
@@ -27,17 +28,18 @@
         "DetectParquetBloomFilters",
         "AnalyzeParquetCompression",
         "InspectParquetGeospatialStatistics",
-        "EmitParquetMetadataJson"
+        "EmitParquetMetadataJson",
+        "InspectVortexMetadata"
       ],
       "representativeQueries": [
         "inspect the compression and encodings used in this Parquet file",
         "does this Parquet file contain Bloom filters or page indexes",
         "show the row groups statistics and physical and logical types in this Parquet file",
         "compare storage metadata across these Parquet files",
-        "produce machine-readable metadata for this Parquet file"
+        "show the schema, scan splits and file size of this Vortex file"
       ],
-      "version": "0.8.2",
-      "updatedAt": "2026-09-27T11:33:23Z",
+      "version": "0.9.0",
+      "updatedAt": "2026-11-26T21:55:08Z",
       "metadata": {
         "package": "https://pypi.org/project/iparq/",
         "homepage": "https://iparq.dev/",

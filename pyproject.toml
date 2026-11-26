@@ -1,7 +1,7 @@
 [project]
 name = "iparq"
-version = "0.8.2"
-description = "Inspect Parquet metadata, encodings, compression, indexes, and Bloom filters"
+version = "0.9.0"
+description = "Inspect Parquet and Vortex storage metadata in the terminal or as JSON"
 readme = "README.md"
 authors = [
     { name = "MiguelElGallo", email = "miguel.zurcher@gmail.com" }
@@ -19,29 +19,33 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Typing :: Typed",
 ]
 dependencies = [
-    "pyarrow>=25.0.1",
-    "pydantic>=2.13.5",
+    "pyarrow>=25.0.1; python_version == '3.10'",
+    "pyarrow>=26.0.1; python_version >= '3.11'",
+    "pydantic>=2.14.4",
     "rich>=15.0.0",
-    "typer>=0.27.2",
+    "typer>=0.29.1; python_version == '3.10'",
+    "typer>=0.29.3; python_version >= '3.11'",
 ]
 
 [project.optional-dependencies]
+vortex = ["vortex-data>=0.95.0; python_version >= '3.11'"]
 test = [
     "jsonschema>=4.26.0",
-    "pytest>=9.1.1",
+    "pytest>=9.2.0",
     "pytest-cov>=7.1.0",
 ]
 checks = [
-    "complexipy==8.0.1",
+    "complexipy==9.0.0; python_version < '3.16'",
     "interrogate==1.7.0",
-    "mypy>=2.3.1",
-    "pyrefly==1.3.1",
-    "ruff==0.16.9",
-    "tomli>=2.0.1",
-    "ty==0.0.84",
+    "mypy>=2.4.1",
+    "pyrefly==1.5.0",
+    "ruff==0.17.6",
+    "tomli>=2.5.0",
+    "ty==0.0.112",
 ]
 
 [project.scripts]
@@ -54,7 +58,7 @@ Repository = "https://github.com/MiguelElGallo/iparq"
 Issues = "https://github.com/MiguelElGallo/iparq/issues"
 
 [build-system]
-requires = ["hatchling>=1.32.0"]
+requires = ["hatchling>=1.33.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel.force-include]
@@ -131,6 +135,6 @@ ignore_missing_imports = true
 [dependency-groups]
 dev = [
     "jsonschema>=4.26.0",
-    "pytest>=9.1.1",
+    "pytest>=9.2.0",
     "pytest-cov>=7.1.0",
 ]

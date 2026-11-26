@@ -1,7 +1,7 @@
 {
   "name": "iparq",
-  "version": "0.8.2",
-  "description": "Inspect local Parquet metadata, compression, encodings, indexes, statistics, and Bloom filters with iParq.",
+  "version": "0.9.0",
+  "description": "Inspect Parquet compression, encodings and indexes, and Vortex schemas, scan splits and file sizes locally with iParq.",
   "author": {
     "name": "MiguelElGallo",
     "email": "miguel.zurcher@gmail.com",
@@ -12,6 +12,7 @@
   "license": "MIT",
   "keywords": [
     "parquet",
+    "vortex",
     "metadata",
     "compression",
     "data-engineering"
@@ -19,8 +20,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "iParq",
-    "shortDescription": "Inspect Parquet metadata locally",
-    "longDescription": "Use iParq's read-only CLI to inspect local Parquet storage metadata and return structured results without uploading files.",
+    "shortDescription": "Inspect Parquet and Vortex metadata locally",
+    "longDescription": "Use iParq's read-only CLI to inspect local Parquet and Vortex storage metadata and return structured results without uploading files.",
     "developerName": "MiguelElGallo",
     "category": "Developer Tools",
     "capabilities": [
@@ -28,6 +29,6 @@
       "Read"
     ],
     "websiteURL": "https://iparq.dev/",
-    "defaultPrompt": "Inspect the Parquet files in this task and explain their storage-level metadata."
+    "defaultPrompt": "Inspect the Parquet or Vortex files in this task and explain their storage-level metadata."
   }
 }

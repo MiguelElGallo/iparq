@@ -1,8 +1,8 @@
-# iParq — local Parquet metadata inspector
+# iParq — local Parquet and Vortex metadata inspector
 
-iParq is a free, MIT-licensed command-line tool and Agent Skill for inspecting how local Parquet files were written. It reports metadata without querying row data, uploading files, or modifying inputs.
+iParq is a free, MIT-licensed command-line tool and Agent Skill for inspecting how local Parquet and Vortex files were written. It reports metadata without querying row data, uploading files, or modifying inputs.
 
-Current release: [iParq 0.8.2](https://github.com/MiguelElGallo/iparq/releases/tag/v0.8.2).
+Current release: [iParq 0.9.0](https://github.com/MiguelElGallo/iparq/releases/tag/v0.9.0).
 
 ## When to use iParq
 
@@ -15,11 +15,15 @@ Use iParq to inspect or compare:
 - Bloom-filter offsets and sizes;
 - creator, format version, row count, and serialized metadata size.
 
+For Vortex, inspect the schema, row count, split row ranges, file size, and postscript size.
+
 ## Agent-safe invocation
 
 ```sh
 uvx --refresh iparq inspect FILE.parquet --format json --details --sizes
 ```
+
+On Python 3.11 or newer, run `uvx --from 'iparq[vortex]' iparq inspect FILE.vortex --format json` for Vortex.
 
 A single file produces one JSON object. Multiple files produce an array whose entries include `file`. Diagnostics are written to stderr. Any unreadable input makes the command exit non-zero while leaving successful JSON output valid.
 
@@ -29,7 +33,7 @@ Treat observed metadata separately from recommendations. The presence of a Bloom
 
 - [CLI and Agent Skill documentation](https://iparq.dev/docs/)
 - [ARD catalog](https://iparq.dev/.well-known/ai-catalog.json)
-- [Parquet Inspector Skill](https://raw.githubusercontent.com/MiguelElGallo/iparq/main/.agents/skills/iparq-parquet-inspector/SKILL.md)
+- [Parquet and Vortex Inspector Skill](https://raw.githubusercontent.com/MiguelElGallo/iparq/main/.agents/skills/iparq-parquet-inspector/SKILL.md)
 - [PyPI](https://pypi.org/project/iparq/)
 - [GitHub](https://github.com/MiguelElGallo/iparq)
 - [Pricing and license](https://iparq.dev/pricing.md)
