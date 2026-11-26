@@ -21,14 +21,14 @@
       <pre><code>uvx --refresh iparq inspect FILE.parquet --format json --details --sizes</code></pre>
       <p>For Vortex, use Python 3.11 or newer with the optional reader.</p>
       <pre><code>uvx --from 'iparq[vortex]' iparq inspect FILE.vortex --format json</code></pre>
-      <p>Use <code>pip install iparq</code> for a persistent installation. The default output is a Rich table for people; <code>--format json</code> is the stable choice for scripts and agents.</p>
+      <p>For a persistent installation, run <code>pip install iparq</code> for Parquet or <code>pip install 'iparq[vortex]'</code> for both formats. The default output uses Rich tables. Use <code>--format json</code> for scripts and agents.</p>
 
       <h2>Inspection options</h2>
       <ul>
-        <li><code>--metadata-only</code> reports the file summary. For Parquet this includes the creator, row groups, version, and serialized metadata size. For Vortex it includes the version, row and field counts, root type, and file and postscript sizes.</li>
+        <li><code>--metadata-only</code> reports the file summary. For Parquet this includes the creator, row groups, version, and serialized metadata size. For Vortex it includes the version, row and field counts, root type, and nullability.</li>
         <li><code>--column NAME</code> restricts column-level output.</li>
-        <li><code>--details</code> adds Parquet storage details or Vortex scan split ranges. Vortex ranges include the start row and exclude the stop row.</li>
-        <li><code>--sizes</code> adds Parquet column sizes and compression ratios, or Vortex file and postscript sizes in bytes.</li>
+        <li>In Rich output, <code>--details</code> adds Parquet storage details or Vortex scan split ranges. Vortex ranges include the start row and exclude the stop row.</li>
+        <li>In Rich output, <code>--sizes</code> adds Parquet column sizes and compression ratios, or Vortex file and postscript sizes in bytes. Vortex JSON always includes both sizes in <code>metadata</code>.</li>
       </ul>
 
       <h2>Machine-readable contract</h2>
