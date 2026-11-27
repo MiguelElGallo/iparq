@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "iparq",
-  "version": "0.8.2",
-  "description": "Inspect local Parquet metadata, compression, encodings, indexes, statistics, and Bloom filters with iParq.",
+  "version": "0.9.0",
+  "description": "Inspect Parquet compression, encodings and indexes, and Vortex schemas, scan splits and file sizes locally with iParq.",
   "author": {
     "name": "MiguelElGallo",
     "email": "miguel.zurcher@gmail.com",
@@ -13,6 +13,7 @@
   "license": "MIT",
   "keywords": [
     "parquet",
+    "vortex",
     "metadata",
     "compression",
     "data-engineering"

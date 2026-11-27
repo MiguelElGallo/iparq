@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.0 — 26 November 2026
+
+- Inspect local Vortex files with `iparq[vortex]` on Python 3.11 or newer. Rich and JSON output report row counts, field types and nullability, scan splits, file sizes, and postscript sizes.
+- Inspect Parquet and Vortex together, including files with nonstandard extensions. Column filtering, metadata-only output, and partial results work across formats.
+- Refresh runtime, test, build, and quality dependencies and the uv lockfile. Python 3.10 retains the latest compatible Parquet dependencies. CI also exercises Python 3.15.
+
 ## 0.8.2 — 27 September 2026
 
 This maintenance release adds consistent Python quality checks and resolves all

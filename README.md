@@ -15,6 +15,7 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
 
 ## Features
 
+- **Vortex** inspection reports row counts, native field types and nullability, scan split ranges, and file and postscript sizes.
 - **Bloom filters**: Detects real Bloom-filter metadata and reports its size. Read more in this [great article](https://duckdb.org/2025/03/07/parquet-bloom-filters-in-duckdb.html).
 - **Encodings and types**: Shows physical and logical types plus encodings such as `RLE_DICTIONARY`, `DELTA_BINARY_PACKED`, and `BYTE_STREAM_SPLIT`.
 - **Indexes and dictionary pages**: Reports dictionary pages, column indexes, and offset indexes.
@@ -25,9 +26,9 @@ After reading [this blog](https://duckdb.org/2025/01/22/parquet-encodings.html),
 - **Compression**: Shows codecs with optional column sizes and compression ratios.
 - **Machine-readable output**: Emits JSON for scripts and agent workflows.
 
-iParq requires Python 3.10 or later.
+Parquet inspection requires Python 3.10 or later. The optional Vortex reader requires Python 3.11 or later on a platform with a Vortex wheel.
 
-Current release: **[0.8.2](https://github.com/MiguelElGallo/iparq/releases/tag/v0.8.2)**.
+Current release: **[0.9.0](https://github.com/MiguelElGallo/iparq/releases/tag/v0.9.0)**.
 See the [changelog](CHANGELOG.md) for release changes. Contributor quality checks
 are documented in [CONTRIBUTING.md](CONTRIBUTING.md#run-the-python-quality-checks).
 
@@ -100,8 +101,22 @@ Options include:
 - `--format`, `-f`: Output format, either `rich` (default) or `json`
 - `--metadata-only`, `-m`: Show only file metadata without column details
 - `--column`, `-c`: Filter results to show only a specific column
-- `--sizes`, `-s`: Show column sizes and compression ratios
-- `--details`, `-d`: Show row groups, sort order, encodings, types, indexes, page locations, Bloom-filter size, and detailed statistics
+- `--sizes`, `-s` shows Parquet column sizes and compression ratios, or Vortex file and postscript sizes in bytes.
+- `--details`, `-d` shows Parquet storage details or Vortex scan split row ranges.
+
+### Inspect Vortex files
+
+Install the reader and inspect a file, or pass a mix of Vortex and Parquet paths in the same command.
+
+```sh
+python -m pip install 'iparq[vortex]'
+iparq inspect events.vortex --details --sizes
+iparq inspect events.vortex events.parquet --format json
+```
+
+For a one-off inspection with uv, run `uvx --from 'iparq[vortex]' iparq inspect events.vortex --format json`.
+
+iParq recognizes local files by their signature, including files with a different extension. Vortex JSON has `metadata.file_format` set to `vortex`. It includes the on-disk format version, row count, root type, file and postscript sizes, top-level fields, and scan splits. Each split includes `start_row` and excludes `stop_row`. A non-struct root has one column with `column_name: null`. Use `--column NAME` to select a named field or `--metadata-only` to omit columns and splits. [Vortex file format](https://docs.vortex.dev/specs/file-format)
 
 ### Single File Examples:
 
@@ -153,7 +168,7 @@ exit non-zero without corrupting successful JSON output.
 iParq publishes [CLI and Agent Skill documentation](https://iparq.dev/docs/), an
 [Agentic Resource Discovery (ARD) catalog](https://iparq.dev/.well-known/ai-catalog.json),
 an [agent-readable documentation index](https://iparq.dev/llms.txt), and a
-portable [Parquet inspection skill](.agents/skills/iparq-parquet-inspector/SKILL.md).
+portable [file inspection skill](.agents/skills/iparq-parquet-inspector/SKILL.md).
 The catalog advertises the existing read-only CLI and its JSON output; it does
 not add a network service or change how iParq accesses files.
 

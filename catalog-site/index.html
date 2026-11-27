@@ -3,27 +3,27 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="iParq is a free, local, read-only CLI and Agent Skill for inspecting Parquet metadata, compression, encodings, indexes, statistics, and Bloom filters.">
+    <meta name="description" content="iParq is a free, local, read-only CLI and Agent Skill for inspecting Parquet storage metadata and Vortex schemas, scan splits and file sizes.">
     <link rel="canonical" href="https://iparq.dev/">
     <link rel="ai-catalog" href="https://iparq.dev/.well-known/ai-catalog.json">
     <link rel="alternate" type="text/markdown" href="https://iparq.dev/index.md" title="iParq for agents">
-    <meta property="og:title" content="iParq — inspect Parquet storage metadata locally">
+    <meta property="og:title" content="iParq — inspect Parquet and Vortex storage metadata locally">
     <meta property="og:description" content="A free, read-only CLI and Agent Skill for inspecting Parquet metadata without uploading file contents.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://iparq.dev/">
     <meta property="og:image" content="https://raw.githubusercontent.com/MiguelElGallo/iparq/main/media/iparq.png">
-    <title>iParq — local Parquet metadata inspector</title>
+    <title>iParq — local Parquet and Vortex metadata inspector</title>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "iParq",
         "url": "https://iparq.dev/",
-        "description": "A local, read-only command-line tool and Agent Skill for inspecting Parquet metadata, compression, encodings, physical and logical types, row groups, statistics, indexes, dictionary pages, Bloom filters, and storage sizes.",
+        "description": "A local, read-only command-line tool and Agent Skill for inspecting Parquet storage metadata and Vortex schemas, scan splits and file sizes.",
         "applicationCategory": "DeveloperApplication",
         "applicationSubCategory": "Data engineering tool",
         "operatingSystem": "Linux, macOS, Windows",
-        "softwareVersion": "0.8.2",
+        "softwareVersion": "0.9.0",
         "programmingLanguage": "Python",
         "license": "https://opensource.org/license/mit",
         "downloadUrl": "https://pypi.org/project/iparq/",
@@ -84,28 +84,30 @@
       </nav>
     </header>
     <main>
-      <h1>Inspect Parquet storage metadata locally</h1>
-      <p class="lede">iParq is a free, open-source command-line tool and Agent Skill for understanding how Parquet files were written. It reports metadata without querying row data and without uploading files to a remote service.</p>
-      <p>Current release: <a href="https://github.com/MiguelElGallo/iparq/releases/tag/v0.8.2">iParq 0.8.2</a>.</p>
+      <h1>Inspect Parquet and Vortex storage metadata locally</h1>
+      <p class="lede">iParq is a free, open-source command-line tool and Agent Skill for understanding how Parquet and Vortex files were written. It reports metadata without querying row data and without uploading files to a remote service.</p>
+      <p>Current release: <a href="https://github.com/MiguelElGallo/iparq/releases/tag/v0.9.0">iParq 0.9.0</a>.</p>
 
       <h2>What iParq reveals</h2>
-      <p>Inspect compression codecs, encodings, physical and logical types, row groups, min/max and null statistics, dictionary pages, column and offset indexes, Bloom-filter metadata, compressed sizes, and compression ratios. Compare several files or restrict an inspection to one column when diagnosing storage layout and missing optimizations.</p>
+      <p>For Parquet, inspect compression codecs, encodings, physical and logical types, row groups, min/max and null statistics, dictionary pages, column and offset indexes, Bloom-filter metadata, compressed sizes, and compression ratios. Compare several files or restrict an inspection to one column when diagnosing storage layout and missing optimizations. For Vortex, inspect row counts, field types and nullability, scan split row ranges, and file and postscript sizes.</p>
 
       <h2>Run it without installing</h2>
       <pre><code>uvx --refresh iparq inspect FILE.parquet --format json --details --sizes</code></pre>
+      <p>For Vortex, use Python 3.11 or newer with the optional reader.</p>
+      <pre><code>uvx --from 'iparq[vortex]' iparq inspect FILE.vortex --format json</code></pre>
       <p>The JSON output is designed for scripts and agent workflows. A single file produces one object; multiple files produce an array with a <code>file</code> field. Diagnostics go to stderr, and unreadable inputs return a non-zero exit status without corrupting successful JSON output.</p>
 
       <h2>When agents should use it</h2>
       <p>Use iParq when a task asks how a local Parquet file is encoded or compressed, whether it contains page indexes or Bloom filters, how row groups and statistics are arranged, or how storage metadata differs across files. Observed metadata is evidence about the file structure; it is not proof that a particular query engine will use an optimization.</p>
 
       <h2>Agent discovery</h2>
-      <p>Agents can discover iParq through the <a href="/.well-known/ai-catalog.json">ARD catalog</a>, read the portable <a href="https://raw.githubusercontent.com/MiguelElGallo/iparq/main/.agents/skills/iparq-parquet-inspector/SKILL.md">Parquet inspection Skill</a>, or start with the <a href="/llms.txt">machine-readable documentation index</a>. Discovery does not create a network service: inspections still run locally through the published Python package.</p>
+      <p>Agents can discover iParq through the <a href="/.well-known/ai-catalog.json">ARD catalog</a>, read the portable <a href="https://raw.githubusercontent.com/MiguelElGallo/iparq/main/.agents/skills/iparq-parquet-inspector/SKILL.md">Parquet and Vortex inspection Skill</a>, or start with the <a href="/llms.txt">machine-readable documentation index</a>. Discovery does not create a network service: inspections still run locally through the published Python package.</p>
 
       <h2>Documentation and source</h2>
       <p>Read the <a href="/docs/">CLI and agent documentation</a>, install the package from <a href="https://pypi.org/project/iparq/">PyPI</a>, or review the implementation, tests, and MIT license in the <a href="https://github.com/MiguelElGallo/iparq">GitHub repository</a>. iParq is free to use; see the concise <a href="/pricing.md">pricing and license summary</a>.</p>
     </main>
     <footer>
-      <p>iParq is maintained as an open-source project. Parquet files remain on the machine where the CLI runs.</p>
+      <p>iParq is maintained as an open-source project. Inspected files remain on the machine where the CLI runs.</p>
     </footer>
   </body>
 </html>

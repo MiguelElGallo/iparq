@@ -76,10 +76,10 @@ update the changelog and current-release links. Regenerate the lock with
 
 Tag the tested merged revision with `v` followed by the package version, then
 create its GitHub release. PyPI publishing uses a separate manual workflow;
-creating the GitHub release does not trigger it. For 0.8.2, dispatch it with:
+creating the GitHub release does not trigger it. For 0.9.0, dispatch it with:
 
 ```sh
-gh workflow run python-publish.yml --repo MiguelElGallo/iparq --ref v0.8.2
+gh workflow run python-publish.yml --repo MiguelElGallo/iparq --ref v0.9.0
 ```
 
 The workflow rejects a ref that disagrees with the package version. It runs all

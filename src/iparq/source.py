@@ -1,4 +1,4 @@
-"""Inspect Parquet metadata and render terminal tables or JSON results."""
+"""Inspect Parquet and Vortex metadata in terminal tables or JSON."""
 
 import glob
 import json
@@ -13,9 +13,9 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-app = typer.Typer(
-    help="Inspect Parquet files for metadata, compression, and bloom filters"
-)
+from iparq.vortex_inspection import VortexInspection, is_vortex_file, read_vortex
+
+app = typer.Typer(help="Inspect storage metadata in Parquet and Vortex files")
 console = Console()
 error_console = Console(stderr=True)
 
@@ -313,6 +313,12 @@ def print_parquet_metadata(parquet_metadata: pq.FileMetaData) -> None:
         pass
 
 
+def _schema_type_name(value: object, missing: str) -> str | None:
+    """Normalize the reader's sentinel for an absent schema type name."""
+    name = str(value)
+    return None if name == missing else name
+
+
 def print_compression_types(
     parquet_metadata: pq.FileMetaData, column_info: ParquetColumnInfo
 ) -> None:
@@ -328,13 +334,6 @@ def print_compression_types(
         for j in range(parquet_metadata.num_columns):
             column_chunk = row_group.column(j)
             schema_column = parquet_metadata.schema.column(j)
-            logical_type: str | None = str(schema_column.logical_type)
-            if logical_type == "None":
-                logical_type = None
-            converted_type: str | None = str(schema_column.converted_type)
-            if converted_type == "NONE":
-                converted_type = None
-
             column_info.columns.append(
                 ColumnInfo(
                     row_group=i,
@@ -342,7 +341,7 @@ def print_compression_types(
                     column_index=j,
                     compression_type=column_chunk.compression,
                     physical_type=column_chunk.physical_type,
-                    logical_type=logical_type,
+                    logical_type=_schema_type_name(schema_column.logical_type, "None"),
                     encodings=list(column_chunk.encodings),
                     has_dictionary_page=column_chunk.has_dictionary_page,
                     has_column_index=column_chunk.has_column_index,
@@ -360,7 +359,9 @@ def print_compression_types(
                     file_path=column_chunk.file_path or None,
                     dictionary_page_offset=column_chunk.dictionary_page_offset,
                     data_page_offset=column_chunk.data_page_offset,
-                    converted_type=converted_type,
+                    converted_type=_schema_type_name(
+                        schema_column.converted_type, "NONE"
+                    ),
                     type_length=optional_positive(schema_column.length),
                     precision=optional_positive(schema_column.precision),
                     scale=(
@@ -748,18 +749,23 @@ def _filter_columns(
     format: OutputFormat,
 ) -> None:
     """Apply the requested column filter and route unmatched diagnostics safely."""
-    if not column_filter:
+    if column_filter is None:
         return
     column_info.columns = [
         column for column in column_info.columns if column.column_name == column_filter
     ]
     if not column_info.columns:
-        destination = error_console if format == OutputFormat.JSON else console
-        destination.print(
-            terminal_safe_text(
-                f"No columns match the filter: {column_filter}", style="yellow"
-            )
+        _warn_missing_column(column_filter, format)
+
+
+def _warn_missing_column(column_filter: str, format: OutputFormat) -> None:
+    """Route unmatched filters to the correct stream for the requested output."""
+    destination = error_console if format == OutputFormat.JSON else console
+    destination.print(
+        terminal_safe_text(
+            f"No columns match the filter: {column_filter}", style="yellow"
         )
+    )
 
 
 def _print_rich_inspection(
@@ -781,7 +787,7 @@ def _print_rich_inspection(
     console.print(terminal_safe_text(f"Compression codecs: {compression}"))
 
 
-def inspect_single_file(
+def _inspect_parquet_file(
     filename: str,
     format: OutputFormat,
     metadata_only: bool,
@@ -837,6 +843,66 @@ def inspect_single_file(
     return None
 
 
+def _print_vortex_tables(
+    result: VortexInspection, metadata_only: bool, show_sizes: bool, show_details: bool
+) -> None:
+    """Display the Vortex file summary, typed columns, and requested scan splits."""
+    meta = result.metadata
+    summary = Table("Property", "Value", title="Vortex File Metadata")
+    add_terminal_safe_row(summary, "Format version", meta.format_version)
+    add_terminal_safe_row(summary, "Rows", meta.num_rows)
+    add_terminal_safe_row(summary, "Columns", meta.num_columns)
+    add_terminal_safe_row(summary, "Root dtype", meta.root_dtype)
+    add_terminal_safe_row(summary, "Root nullable", meta.root_nullable)
+    if show_sizes:
+        add_terminal_safe_row(summary, "File size (bytes)", meta.file_size_bytes)
+        add_terminal_safe_row(
+            summary, "Postscript size (bytes)", meta.postscript_size_bytes
+        )
+    console.print(summary)
+    if metadata_only:
+        return
+    columns = Table("Column", "Vortex dtype", "Nullable", title="Vortex Columns")
+    for field in result.columns:
+        name = "(root)" if field.column_name is None else field.column_name
+        add_terminal_safe_row(columns, name, field.dtype, field.nullable)
+    console.print(columns)
+    if show_details:
+        splits = Table("Start row", "Stop row (exclusive)", title="Vortex Scan Splits")
+        for split in result.splits:
+            add_terminal_safe_row(splits, split.start_row, split.stop_row)
+        console.print(splits)
+
+
+def inspect_single_file(
+    filename: str,
+    format: OutputFormat,
+    metadata_only: bool,
+    column_filter: str | None,
+    show_sizes: bool = False,
+    show_details: bool = False,
+) -> dict[str, object] | None:
+    """Identify the input format and inspect its native storage metadata."""
+    if not is_vortex_file(filename):
+        return _inspect_parquet_file(
+            filename, format, metadata_only, column_filter, show_sizes, show_details
+        )
+    result = read_vortex(
+        filename,
+        include_columns=not metadata_only or column_filter is not None,
+        include_splits=not metadata_only
+        and (format == OutputFormat.JSON or show_details),
+    )
+    if column_filter is not None:
+        result.columns = [c for c in result.columns if c.column_name == column_filter]
+        if not result.columns:
+            _warn_missing_column(column_filter, format)
+    if format == OutputFormat.JSON:
+        return result.model_dump(include={"metadata"} if metadata_only else None)
+    _print_vortex_tables(result, metadata_only, show_sizes, show_details)
+    return None
+
+
 def _expand_unique_files(filenames: list[str]) -> list[str]:
     """Expand input patterns and retain each filename in first-seen order."""
     all_files = []
@@ -867,7 +933,7 @@ def _emit_json_results(json_results: list[dict[str, object]], file_count: int) -
 @app.command(name="inspect")
 def inspect(
     filenames: list[str] = typer.Argument(
-        ..., help="Path(s) or pattern(s) to Parquet files to inspect"
+        ..., help="Paths or patterns for Parquet and Vortex files"
     ),
     format: OutputFormat = typer.Option(
         OutputFormat.RICH, "--format", "-f", help="Output format (rich or json)"
@@ -885,17 +951,17 @@ def inspect(
         False,
         "--sizes",
         "-s",
-        help="Show column sizes and compression ratios",
+        help="Show Parquet column sizes and compression ratios, or Vortex file and postscript sizes",
     ),
     show_details: bool = typer.Option(
         False,
         "--details",
         "-d",
-        help="Show row groups, schema, indexes, page locations, and statistics",
+        help="Show Parquet storage details or Vortex scan split row ranges",
     ),
 ) -> None:
     """
-    Inspect Parquet files and display their metadata, compression settings, and bloom filter information.
+    Inspect file and column metadata in Parquet and Vortex files.
     """
     unique_files = _expand_unique_files(filenames)
 
